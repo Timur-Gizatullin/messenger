@@ -12,7 +12,7 @@ class AuthViewSet(viewsets.GenericViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
-    @action(details=False, method='post')
+    @action(details=False, methods=['post'])
     def sign_up(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid()
