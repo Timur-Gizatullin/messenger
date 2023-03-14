@@ -21,8 +21,14 @@ class AuthViewSet(viewsets.GenericViewSet):
             return Response({'Message': "Email already exist"}, status=status.HTTP_400_BAD_REQUEST)
         if serializer.validated_data['password'] != serializer.validated_data['password_repeat']:
             return Response({'Message': "Passwords are not similar"}, status=status.HTTP_400_BAD_REQUEST)
+        if serializer.validated_data['email'] is None or\
+                serializer.validated_data['password'] is None or\
+                serializer.validated_data['password_repeat'] is None:
+            return Response({'Message': "Missing required args"}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.save()
+
+        return Response(user, status=status.HTTP_201_CREATED)
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == 'sign_up':
