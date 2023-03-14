@@ -12,10 +12,6 @@ class UserSerializer(serializers.ModelSerializer):
 
         return user
 
-    def validate(self, user):
-        if user['email'] is None or user['password'] is None or user['password_repeat'] is None:
-            raise serializers.ValidationError("Missing required args")
-
     class Meta:
         model = User
         fields = ['pk', 'email', 'password', 'repeat_password']
