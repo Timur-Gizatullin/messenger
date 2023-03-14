@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from core.models import Chat
 
@@ -10,5 +11,12 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ['id', 'users', 'last_message']
+        fields = ['pk', 'users', 'last_message', 'is_dialog']
         depth = 1
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Chat.objects.all(),
+                fields=['users', 'is_dialog']
+            )
+        ]
