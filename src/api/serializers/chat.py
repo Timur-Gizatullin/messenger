@@ -24,5 +24,5 @@ class ChatSerializer(serializers.ModelSerializer):
         return (
             Message.objects
             .filter(chat=chat.pk)
-            .first())
             .reverse()
+            .first())
