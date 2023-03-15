@@ -1,18 +1,17 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
-from core.models import Chat
+from core.models import Chat, Message
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    users = serializers.ManyRelatedField()
-    last_message = serializers.CharField()
+    last_message = serializers.SerializerMethodField()
 
     class Meta:
         model = Chat
-        fields = ['pk', 'users', 'last_message', 'is_dialog']
         depth = 1
+        fields = ['pk', 'users', 'last_message', 'is_dialog']
+        extra_kwargs = {'users': {'many': True}}
 
         validators = [
             UniqueTogetherValidator(
@@ -20,3 +19,10 @@ class ChatSerializer(serializers.ModelSerializer):
                 fields=['users', 'is_dialog']
             )
         ]
+
+    def get_last_message(self, chat: Chat) -> Message:
+        return (
+            Message.objects
+            .filter(chat=chat.pk)
+            .first())
+            .reverse()
