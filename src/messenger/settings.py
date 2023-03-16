@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',
     'rest_framework',
     'core',
     'api',
@@ -51,6 +52,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'messenger.wsgi.application'
 
+ASGI_APPLICATION = "TODO"
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -61,6 +64,12 @@ DATABASES = {
         'PORT': os.environ.get('POSTGRES_PORT', '5432'),
     }
 }
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': "channels.layers.InMemoryChannelLayer"
+        }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {
