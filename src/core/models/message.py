@@ -7,7 +7,7 @@ from core.models.mixins import CreatedAtUpdatedAtMixin
 class Message(CreatedAtUpdatedAtMixin):
     author = models.ForeignKey(
         "User",
-        on_delete=models.SET("DELETED"),
+        on_delete=models.SET(constants.DELETED_USER),
         related_name="messages",
         verbose_name="Отправитель",
     )

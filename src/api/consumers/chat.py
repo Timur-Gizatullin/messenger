@@ -1,55 +1,49 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
+from channels.layers import  get_channel_layer
 
 from loguru import logger
+
+from api.serializers.message import MessageSerializer
 
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.chat_id = self.scope["url_route"]["kwargs"]["pk"]
-        self.group_name = f"chat_{self.chat_id}"
-
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-
         await self.accept()
 
         logger.info("connected to ws")
 
-    async def disconnect(self, code):
-        await self.channel_layer.group_discard(self.group_name, self.channel_name)
+    async def receive(self, content):
+        logger.info(content)
 
-        logger.info("disconnected from ws")
+        serializer = self.get_serializer(data=content)
 
-    async def receive(self, text_data):
-        logger.info(text_data)
-        text_data_json = json.loads(text_data)
-        message_text = text_data_json["text"]
-        message_picture = text_data_json["picture"]
-        user = text_data_json["author"]
+        if not serializer.is_valid():
+            return
 
-        await self.channel_layer.group_send(
-            self.group_name,
-            {
-                "type": "chat_message",
-                "message_text": message_text,
-                "message_picture": message_picture,
-                "user": user,
-            },
+        group_name = serializer.get_group_name()
+
+        self.groups.append(group_name)
+
+        await self.channel_layer.group_add(
+            group_name,
+            self.channel_name,
         )
 
-    async def chat_message(self, event):
+    async def notify(self, event):
         logger.info(event)
-        message_text = event["message_text"]
-        message_picture = event["message_picture"]
-        user = event["user"]
-        await self.send(
-            text_data=json.dumps(
-                {
-                    "message_text": message_text,
-                    "message_picture": message_picture,
-                    "user": user,
-                }
-            )
-        )
+        await self.send_json(event["content"])
 
-        pass
+    async def add_message(self, message):
+        serializer = MessageSerializer(message)
+        group_name = serializer.get_group_name()
+        chanel_layer = get_channel_layer()
+        content = {
+            "type": "add_message",
+            "payload": serializer.data,
+        }
+
+        await chanel_layer.group_send(group_name, {
+            "type": "notify",
+            "content": content,
+        })
