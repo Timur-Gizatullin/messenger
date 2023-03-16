@@ -1,8 +1,5 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
 
-from api.serializers.user import UserSerializer
-from core import models
 from core.models import Chat, Message, User
 
 
@@ -35,8 +32,11 @@ class ChatCreateSerializer(ChatSerializer):
     def validate(self, attrs):
         users = attrs.get('users')
         is_dialog = attrs.get('is_dialog')
+        crnt_user_id = self.context.get('request').user.id
 
-        if len(users) < 2:
+        if not [user['pk'] for user in users].__contains__(crnt_user_id):
+            raise serializers.ValidationError("Impossible create chat without current user as member")
+        elif len(users) < 2:
             raise serializers.ValidationError("Impossible to create chat with one or less member")
         elif len(users) > 2 and is_dialog is True:
             raise serializers.ValidationError("Impossible to create chat of dialog type with 2 more users")

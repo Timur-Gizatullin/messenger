@@ -13,12 +13,6 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
-    def create(self, request, *args, **kwargs):
-        if not [user['pk'] for user in request.data['users']].__contains__(request.user.id):
-            return Response({"Message": "Impossible create chat without current user as member"})
-
-        return super().create(request, *args, **kwargs)
-
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":
             return super().filter_queryset(queryset).filter(users=self.request.user)
