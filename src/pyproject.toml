@@ -12,8 +12,16 @@ psycopg2-binary = "^2.9.5"
 pillow = "^9.4.0"
 djangorestframework = "^3.14.0"
 channels = "^4.0.0"
+loguru = "^0.6.0"
+drf-yasg = "^1.21.5"
 
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.1.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-lenght = 120
