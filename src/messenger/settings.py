@@ -52,7 +52,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'messenger.wsgi.application'
 
-ASGI_APPLICATION = "TODO"
+ASGI_APPLICATION = "messenger.asgi.application"
 
 DATABASES = {
     'default': {
