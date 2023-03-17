@@ -1,10 +1,9 @@
 from django.db.models import QuerySet
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin
+from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.mixins import CreateModelMixin
+from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.chat import ChatSerializer, ChatCreateSerializer
+from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from core.models import Chat
 
 
@@ -19,7 +18,7 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
-        if self.action == 'list':
+        if self.action == "list":
             return ChatSerializer
-        elif self.action == 'create':
+        elif self.action == "create":
             return ChatCreateSerializer
