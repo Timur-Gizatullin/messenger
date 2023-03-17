@@ -1,15 +1,14 @@
 from django.db.models import QuerySet
-from rest_framework import viewsets
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.mixins import CreateModelMixin
-from rest_framework.response import Response
 
 from api.serializers.chat import ChatSerializer, ChatCreateSerializer
 from core.models import Chat
 
 
-class ChatViewSet(CreateModelMixin, ListModelMixin, viewsets.GenericViewSet):
+class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 

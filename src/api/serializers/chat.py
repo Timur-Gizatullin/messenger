@@ -33,10 +33,10 @@ class ChatCreateSerializer(ChatSerializer):
         users = attrs['users']
         users = [user['pk'] for user in users]
         is_dialog = attrs['is_dialog']
-        request = self.context.get('request', None)
+        request = self.context["request"]
         users_count = len(users)
 
-        if request is not None and users.__contains__(request.user.id):
+        if request.user and not users.__contains__(request.user.id):
             raise serializers.ValidationError("Impossible create chat without current user as member")
         elif users_count < 2:
             raise serializers.ValidationError("Impossible to create chat with one or less member")
@@ -47,6 +47,7 @@ class ChatCreateSerializer(ChatSerializer):
             if len(chat) != 0:
                 raise serializers.ValidationError("chat type of dialog with same members already exists")
 
+        attrs["users"] = users
         return attrs
 
     def create(self, validated_data):
