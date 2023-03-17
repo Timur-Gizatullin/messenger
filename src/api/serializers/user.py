@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import User
+from core.models import User, Chat
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +24,13 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
     def create(self, data):
         user = User.objects.create_user(email=data["email"])
         user.set_password(data["password"])
+
+        self_chat = Chat.objects.create()
+
         user.save()
+
+        self_chat.users.set([user])
+        self_chat.save()
 
         return user
 
