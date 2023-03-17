@@ -8,6 +8,7 @@ from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated, AllowAny
 
+from api.consumers.chat import ChatConsumer
 from api.serializers import ChatSerializer
 from api.serializers.message import MessageSerializer
 from core.models import Chat
@@ -27,7 +28,7 @@ class ChatViewSet(ListModelMixin, viewsets.GenericViewSet):
         async_to_sync(channel_layer.group_send)(
             serializer.get_group_name(),
             {
-                'type': 'notify',
+                'type': 'add_message',
                 'message': message
             }
         )

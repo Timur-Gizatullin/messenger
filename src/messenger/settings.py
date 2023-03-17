@@ -73,6 +73,7 @@ CHANNEL_LAYERS = {
             "hosts": [("127.0.0.1", 6379)],
         },
     },
+    "ROUTING": "api.urls.websocket_urlpatterns",
 }
 
 AUTH_PASSWORD_VALIDATORS = [
