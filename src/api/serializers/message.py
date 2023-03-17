@@ -50,7 +50,7 @@ class MessageSerializer(serializers.ModelSerializer):
         user_queryset = User.objects.all()
         current_user = self.context["request"].user
 
-        if current_user.is_deleted\
+        if current_user.is_deleted \
                 or (current_user.id != author or (forwarded_by and current_user.id != forwarded_by["pk"])):
             raise serializers.ValidationError("Impossible to use this account")
         elif not chat_queryset.filter(users__id=author):
@@ -76,7 +76,7 @@ class MessageSerializer(serializers.ModelSerializer):
         return attrs
 
     def get_group_name(self):
-        return f"chat_{self.context['request'].data['chat']}"
+        return f"chat_{self.context['request'].data['chat']['pk']}"
 
     class Meta:
         model = Message
