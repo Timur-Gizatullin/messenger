@@ -1,2 +1,7 @@
-from .auth import AuthViewSet
-from .chat import ChatViewSet
+__all__ = (
+    "AuthViewSet",
+    "ChatViewSet",
+)
+
+from api.views.auth import AuthViewSet
+from api.views.chat import ChatViewSet
