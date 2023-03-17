@@ -43,6 +43,7 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
     profile_picture = models.ImageField(
         verbose_name="Фотография профиля", upload_to="user_profile_pictures"
     )
+    is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
     objects = UserManager()
 
