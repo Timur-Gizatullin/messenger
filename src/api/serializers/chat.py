@@ -21,10 +21,10 @@ class ChatSerializer(serializers.ModelSerializer):
         extra_kwargs = {"users": {"many": True}}
 
     def get_last_message(self, chat: Chat) -> Message:
-        a = Message.objects.filter(chat=chat.pk).reverse().first()
-        if a:
-            a = a.pk
-        return a
+        message = Message.objects.filter(chat=chat.pk).reverse().first()
+        if message:
+            message = message.pk
+        return message
 
 
 class ChatCreateSerializer(ChatSerializer):
