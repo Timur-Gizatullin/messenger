@@ -51,7 +51,7 @@ class MessageSerializer(serializers.ModelSerializer):
         current_user = self.context["request"].user
 
         if current_user.is_deleted \
-                or (current_user.id != author or (forwarded_by and current_user.id != forwarded_by["pk"])):
+                or ((not forwarded_by and current_user.id != author) or (forwarded_by and current_user.id != forwarded_by["pk"])):
             raise serializers.ValidationError("Impossible to use this account")
         elif not chat_queryset.filter(users__id=author):
             raise serializers.ValidationError("Impossible to send message to the chat")
@@ -59,6 +59,10 @@ class MessageSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A member is deleted")
         elif picture is None and text is None:
             raise serializers.ValidationError("text or picture should be filled")
+        elif replied_to:
+            message_replied_to = Message.objects.get(pk=replied_to["pk"])
+            if message_replied_to.chat != chat:
+                raise serializers.ValidationError("Can not reply to this chat")
 
         attrs["author"] = user_queryset.get(pk=author)
         attrs["chat"] = chat_queryset.get()
