@@ -17,6 +17,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'drf_yasg',
     'core',
     'api',
 ]
@@ -82,6 +84,7 @@ AUTH_USER_MODEL = 'core.User'
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
 
     'DEFAULT_PERMISSION_CLASSES': (
@@ -89,6 +92,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
     ),
 }
+
+DRF_AUTH_TOKEN = {"DRF auth token": {"type": "apiKey", "name": "Authorization", "in": "header"}}
+SWAGGER_SETTINGS = {"SECURITY_DEFINITIONS": {**DRF_AUTH_TOKEN}}
 
 LANGUAGE_CODE = 'en-us'
 
