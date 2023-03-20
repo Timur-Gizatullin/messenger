@@ -7,7 +7,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "secret")
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["127.0.0.1"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -73,7 +73,6 @@ CHANNEL_LAYERS = {
             "hosts": [("127.0.0.1", 6379)],
         },
     },
-    "ROUTING": "api.urls.websocket_urlpatterns",
 }
 
 AUTH_PASSWORD_VALIDATORS = [
