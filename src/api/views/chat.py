@@ -15,18 +15,6 @@ class ChatViewSet(ChatWSMixin, ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
-    @action(detail=False, methods=["POST"])
-    def add_message(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        message = serializer.save()
-
-        ChatWSMixin.send_data_to_ws(self, serializer.data)
-
-        return Response(
-                MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
-            )
-
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":
             return super().filter_queryset(queryset).filter(users=self.request.user)
@@ -38,3 +26,15 @@ class ChatViewSet(ChatWSMixin, ListModelMixin, viewsets.GenericViewSet):
             return MessageSerializer
         elif self.action == "list":
             return ChatSerializer
+        
+    @action(detail=False, methods=["POST"])
+    def add_message(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message = serializer.save()
+
+        ChatWSMixin.send_data_to_ws(self, serializer.data)
+
+        return Response(
+                MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
+            )
