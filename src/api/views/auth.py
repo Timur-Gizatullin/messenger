@@ -4,13 +4,17 @@ from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from api.serializers.user import AuthSignUpSerializer, AuthUserOutputSerializer
+from api.serializers.auth import AuthSignUpSerializer, AuthUserOutputSerializer
 from core.models import User
 
 
 class AuthViewSet(viewsets.GenericViewSet):
     permission_classes = (AllowAny,)
     queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == "sign_up":
+            return AuthSignUpSerializer
 
     @swagger_auto_schema(
         request_body=AuthSignUpSerializer,
@@ -26,7 +30,3 @@ class AuthViewSet(viewsets.GenericViewSet):
         return Response(
             AuthUserOutputSerializer(instance=user, context={"request": request}).data, status=status.HTTP_201_CREATED
         )
-
-    def get_serializer_class(self):
-        if self.action == "sign_up":
-            return AuthSignUpSerializer

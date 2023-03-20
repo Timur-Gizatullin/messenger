@@ -3,23 +3,8 @@ from rest_framework import serializers
 from core.models import User, Chat
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = [
-            "pk",
-            "username",
-            "is_active",
-        ]
-        extra_kwargs = {
-            "is_active": {"read_only": True},
-        }
-
-
 class AuthSignUpSerializer(serializers.ModelSerializer):
-    password_repeat = serializers.CharField(
-        write_only=True, min_length=8, max_length=128, required=True, trim_whitespace=True
-    )
+    password_repeat = serializers.CharField()
 
     def create(self, data):
         user = User.objects.create_user(email=data["email"])
@@ -45,12 +30,13 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
         model = User
         fields = ["pk", "email", "password", "password_repeat"]
         extra_kwargs = {
-            "password": {"write_only": True, "required": True, "min_length": 8},
+            "password": {"write_only": True, "required": True},
             "email": {"required": True},
         }
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
-    class Meta(UserSerializer.Meta):
+    class Meta:
+        model = User
         fields = ["email"]
         extra_kwargs = {"email": {"read_only": True}}
