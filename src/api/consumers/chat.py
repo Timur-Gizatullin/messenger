@@ -27,11 +27,11 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.channel_layer.group_send(
             f"chat_{pk}",
             {
-                "type": "chat.message",
+                "type": "chat.notify",
                 "message": text_data,
             }
         )
 
-    async def chat_message(self, event):
+    async def chat_notify(self, event):
         logger.info(f"SEND WS {event}")
-        await self.send(text_data=event["message"])
+        await self.send(text_data=event["content"])

@@ -1,20 +1,17 @@
-from asgiref.sync import async_to_sync
-from channels.layers import get_channel_layer
 from django.db.models import QuerySet
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 
-from api.consumers.chat import ChatConsumer
 from api.serializers import ChatSerializer
 from api.serializers.message import MessageSerializer
+from api.views.mixins import ChatWSMixin
 from core.models import Chat
 
 
-class ChatViewSet(ListModelMixin, viewsets.GenericViewSet):
+class ChatViewSet(ChatWSMixin, ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
@@ -24,14 +21,7 @@ class ChatViewSet(ListModelMixin, viewsets.GenericViewSet):
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        channel_layer = get_channel_layer()
-        async_to_sync(channel_layer.group_send)(
-            "chat",
-            {
-                'type': 'chat.message',
-                'message': message.text,
-            }
-        )
+        ChatWSMixin.send_data_to_ws(self, serializer.data)
 
         return Response(
                 MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
