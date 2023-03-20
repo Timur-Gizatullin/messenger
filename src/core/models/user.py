@@ -37,12 +37,8 @@ class UserManager(BaseUserManager):
 class User(AbstractUser, CreatedAtUpdatedAtMixin):
     username = None
     date_joined = None
-    email = models.EmailField(
-        max_length=255, unique=True, verbose_name="Почта пользователя"
-    )
-    profile_picture = models.ImageField(
-        verbose_name="Фотография профиля", upload_to="user_profile_pictures"
-    )
+    email = models.EmailField(max_length=255, unique=True, verbose_name="Почта пользователя")
+    profile_picture = models.ImageField(null=True, blank=True, verbose_name="Фотография профиля", upload_to='user_profile_pictures')
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
     objects = UserManager()
