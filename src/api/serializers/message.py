@@ -80,9 +80,6 @@ class MessageSerializer(serializers.ModelSerializer):
 
         return attrs
 
-    def get_group_name(self):
-        return f"chat_{self.context['request'].data['chat']['pk']}"
-
     class Meta:
         model = Message
         exclude = ["created_at", "updated_at", ]
