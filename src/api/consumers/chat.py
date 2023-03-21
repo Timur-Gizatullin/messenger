@@ -11,18 +11,18 @@ from api.serializers.message import MessageSerializer
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        logger.info("CONNECTeD TO WS")
         pk = self.scope['url_route']['kwargs']['pk']
         await self.channel_layer.group_add(f"chat_{pk}", self.channel_name)
         await self.accept()
+        logger.info("connected to ws")
 
     async def disconnect(self, code):
-        logger.info("DISCARD WS")
         pk = self.scope['url_route']['kwargs']['pk']
         await self.channel_layer.group_discard(f"chat_{pk}", self.channel_name)
+        logger.info("ws disconnected")
 
     async def receive(self, text_data=None, bytes_data=None):
-        logger.info(f"RECEIVE WS: {text_data}")
+        logger.info(f"ws receive: {text_data}")
         pk = self.scope['url_route']['kwargs']['pk']
         await self.channel_layer.group_send(
             f"chat_{pk}",
@@ -33,5 +33,5 @@ class ChatConsumer(AsyncWebsocketConsumer):
         )
 
     async def chat_notify(self, event):
-        logger.info(f"SEND WS {event}")
+        logger.info(f"ws send: {event}")
         await self.send(text_data=event["content"])
