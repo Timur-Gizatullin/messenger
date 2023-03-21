@@ -38,23 +38,25 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["email"]
+        fields = ["pk", "email", "token"]
         extra_kwargs = {"email": {"read_only": True}}
+
+    def get_token(self, user: User) -> str:
+        tokens = Token.objects.get_or_create(user=user)
+
+        return tokens[0].key
 
 
 class AuthSignInSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def create(self, data):
-        request = self.context["request"]
-        user = data["user"]
-
-        token = Token.objects.get_or_create(user=user)
-
-        return token[0].pk
+    def create(self, validated_data):
+        return validated_data["user"]
 
     def validate(self, attrs):
         email = attrs.pop("email")

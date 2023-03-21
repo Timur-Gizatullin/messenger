@@ -1,9 +1,10 @@
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 
-from api.serializers.auth import AuthSignUpSerializer, AuthSignInSerializer
+from api.serializers.auth import AuthSignUpSerializer, AuthSignInSerializer, AuthUserOutputSerializer
 from core.models import User
 
 
@@ -17,10 +18,16 @@ class AuthViewSet(viewsets.GenericViewSet):
         elif self.action == "sign_in":
             return AuthSignInSerializer
 
+    @swagger_auto_schema(
+        request_body=AuthSignInSerializer,
+        responses={status.HTTP_200_OK: AuthUserOutputSerializer()},
+    )
     @action(detail=False, methods=['POST'])
     def sign_in(self, request):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        token = serializer.save()
+        user = serializer.save()
 
-        return Response(token, status=status.HTTP_201_CREATED)
+        return Response(
+            AuthUserOutputSerializer(instance=user, context={"request": request}).data, status=status.HTTP_200_OK
+        )
