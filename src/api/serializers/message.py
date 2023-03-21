@@ -51,7 +51,8 @@ class MessageSerializer(serializers.ModelSerializer):
         current_user = self.context["request"].user
 
         if current_user.is_deleted \
-                or ((not forwarded_by and current_user.id != author) or (forwarded_by and current_user.id != forwarded_by["pk"])):
+                or ((not forwarded_by and current_user.id != author)
+                    or (forwarded_by and current_user.id != forwarded_by["pk"])):
             raise serializers.ValidationError("Impossible to use this account")
         elif not chat_queryset.filter(users__id=author):
             raise serializers.ValidationError("Impossible to send message to the chat")
