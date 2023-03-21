@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
 from core.models import User, Chat
 
@@ -6,9 +7,9 @@ from core.models import User, Chat
 class AuthSignUpSerializer(serializers.ModelSerializer):
     password_repeat = serializers.CharField()
 
-    def create(self, data):
-        user = User.objects.create_user(email=data["email"])
-        user.set_password(data["password"])
+    def create(self, validated_data):
+        user = User.objects.create_user(email=validated_data["email"])
+        user.set_password(validated_data["password"])
 
         self_chat = Chat.objects.create()
 
@@ -36,7 +37,14 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
+    token = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ["email"]
+        fields = ["pk", "email", "token"]
         extra_kwargs = {"email": {"read_only": True}}
+
+    def get_token(self, user: User) -> str:
+        tokens = Token.objects.get_or_create(user=user)
+
+        return tokens[0].key
