@@ -11,8 +11,7 @@ from core.models import Message
 
 
 class MessageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    authentication_classes = (BasicAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthenticated, )
     queryset = Message.objects.all()
     serializer_class = MessageSerializer
     pagination_class = LimitOffsetPagination
