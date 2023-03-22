@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from typing import List
 
+import rest_framework.authentication
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "secret")
@@ -83,14 +85,15 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "core.User"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.BasicAuthentication",),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-        "rest_framework.permissions.AllowAny",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        'rest_framework.authentication.TokenAuthentication',
     ),
 }
 
-LANGUAGE_CODE = "en-us"
+DRF_AUTH_TOKEN = {"DRF auth token": {"type": "apiKey", "name": "Authorization", "in": "header"}}
+SWAGGER_SETTINGS = {"SECURITY_DEFINITIONS": {**DRF_AUTH_TOKEN}}
+
+LANGUAGE_CODE = 'en-us'
 
 TIME_ZONE = "UTC"
 

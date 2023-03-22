@@ -1,5 +1,6 @@
-from rest_framework import serializers
+from django.contrib.auth import authenticate
 from rest_framework.authtoken.models import Token
+from rest_framework import serializers
 
 from core.models import User, Chat
 
@@ -7,9 +8,9 @@ from core.models import User, Chat
 class AuthSignUpSerializer(serializers.ModelSerializer):
     password_repeat = serializers.CharField()
 
-    def create(self, validated_data):
-        user = User.objects.create_user(email=validated_data["email"])
-        user.set_password(validated_data["password"])
+    def create(self, data):
+        user = User.objects.create_user(email=data["email"])
+        user.set_password(data["password"])
 
         self_chat = Chat.objects.create()
 
@@ -44,3 +45,23 @@ class AuthUserOutputSerializer(serializers.ModelSerializer):
         tokens = Token.objects.get_or_create(user=user)
 
         return tokens[0].key
+
+class AuthSignInSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
+    def create(self, validated_data):
+        return validated_data["user"]
+
+    def validate(self, attrs):
+        email = attrs.pop("email")
+        password = attrs.pop("password")
+
+        user = authenticate(email=email, password=password)
+
+        if not user:
+            raise serializers.ValidationError("Check login or password")
+
+        attrs["user"] = user
+
+        return attrs

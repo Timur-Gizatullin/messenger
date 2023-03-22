@@ -51,4 +51,6 @@ class ChatCreateSerializer(ChatSerializer):
         chat = Chat.objects.create(**validated_data)
         users_queryset = User.objects.all().filter(pk__in=validated_users)
         chat.users.set(users_queryset)
+        chat.save()
+
         return chat
