@@ -31,10 +31,6 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["pk", "email", "password", "password_repeat"]
-        extra_kwargs = {
-            "password": {"write_only": True, "required": True},
-            "email": {"required": True},
-        }
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
@@ -49,7 +45,6 @@ class AuthUserOutputSerializer(serializers.ModelSerializer):
         tokens = Token.objects.get_or_create(user=user)
 
         return tokens[0].key
-
 
 class AuthSignInSerializer(serializers.Serializer):
     email = serializers.EmailField()

@@ -31,3 +31,18 @@ class AuthViewSet(viewsets.GenericViewSet):
         return Response(
             AuthUserOutputSerializer(instance=user, context={"request": request}).data, status=status.HTTP_200_OK
         )
+
+    @swagger_auto_schema(
+        request_body=AuthSignUpSerializer,
+        responses={status.HTTP_201_CREATED: AuthUserOutputSerializer()},
+        operation_summary="Create new account",
+    )
+    @action(detail=False, methods=["POST"])
+    def sign_up(self, request):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+
+        return Response(
+            AuthUserOutputSerializer(instance=user, context={"request": request}).data, status=status.HTTP_201_CREATED
+        )
