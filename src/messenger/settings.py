@@ -1,6 +1,8 @@
 import os
 from pathlib import Path
 
+import rest_framework.authentication
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY', 'secret')
@@ -83,7 +85,7 @@ AUTH_USER_MODEL = 'core.User'
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
-        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ),
 
     'DEFAULT_PERMISSION_CLASSES': (
