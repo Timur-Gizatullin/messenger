@@ -1,11 +1,12 @@
 import pytest
 
 from api.serializers.chat import ChatSerializer
-from tests.factories import ChatFactory, MessageFactory, UserFactory
+
+from tests.factories.factories import ChatFactory, MessageFactory, UserFactory
 
 
 @pytest.mark.django_db
-def test_chat_serializer_get_last_message_when_exist():
+def test__chat_serializer_get_last_message_when_exist():
     chat = ChatFactory()
     user = UserFactory()
     MessageFactory(text="PenultimateMessage", author=user, chat=chat)
@@ -17,7 +18,7 @@ def test_chat_serializer_get_last_message_when_exist():
 
 
 @pytest.mark.django_db
-def test_chat_serializer_get_last_message_when_none():
+def test__chat_serializer_get_last_message_when_none():
     chat = ChatFactory()
 
     serializer = ChatSerializer(chat)
