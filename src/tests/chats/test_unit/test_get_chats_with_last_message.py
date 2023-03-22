@@ -2,15 +2,10 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from tests.factories.factories import ChatFactory, UserFactory
+from tests.factories.chat import ChatFactory
+from tests.factories.user import UserFactory
+
 from tests.confest import api_client
-
-
-def set_chat_users(chats, users, current_user):
-    chats_len = len(chats)
-    for i in range(chats_len - 1):
-        chats[i].users.set(users)
-    chats[chats_len - 1].users.set([current_user])
 
 
 @pytest.mark.django_db

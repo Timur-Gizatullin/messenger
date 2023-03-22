@@ -85,15 +85,13 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = "core.User"
 
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        'rest_framework.authentication.TokenAuthentication',
-    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": ("rest_framework.authentication.TokenAuthentication",),
 }
 
 DRF_AUTH_TOKEN = {"DRF auth token": {"type": "apiKey", "name": "Authorization", "in": "header"}}
 SWAGGER_SETTINGS = {"SECURITY_DEFINITIONS": {**DRF_AUTH_TOKEN}}
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
 TIME_ZONE = "UTC"
 

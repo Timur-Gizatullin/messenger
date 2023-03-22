@@ -1,16 +1,7 @@
-from typing import List
-
 import factory
 
-from core.models import Chat, User, Message
-from tests.factories.mixins import UniqueStringMixin
-
-
-class UserFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = User
-
-    email = UniqueStringMixin("email")
+from core.models import Chat
+from tests.factories.user import UserFactory
 
 
 class ChatFactory(factory.django.DjangoModelFactory):
@@ -29,9 +20,3 @@ class ChatFactory(factory.django.DjangoModelFactory):
             chat.users.set(users)
 
         return chat
-
-
-class MessageFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = Message
-

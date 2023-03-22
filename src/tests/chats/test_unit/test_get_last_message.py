@@ -1,8 +1,9 @@
 import pytest
 
 from api.serializers.chat import ChatSerializer
-
-from tests.factories.factories import ChatFactory, MessageFactory, UserFactory
+from tests.factories.chat import ChatFactory
+from tests.factories.message import MessageFactory
+from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db
