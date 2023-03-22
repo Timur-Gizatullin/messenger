@@ -30,10 +30,6 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["pk", "email", "password", "password_repeat"]
-        extra_kwargs = {
-            "password": {"write_only": True, "required": True},
-            "email": {"required": True},
-        }
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
