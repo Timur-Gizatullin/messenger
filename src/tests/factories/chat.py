@@ -13,6 +13,5 @@ class ChatFactory(factory.django.DjangoModelFactory):
             return
 
         if extracted:
-            # A list of groups were passed in, use them
             for user in extracted:
                 self.users.add(user)
