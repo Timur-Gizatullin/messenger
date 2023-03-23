@@ -7,19 +7,19 @@ from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db
-def test__chat_serializer_get_last_message_when_exist():
+def test__get_last_message__when_exist():
     chat = ChatFactory()
     user = UserFactory()
-    MessageFactory(text="PenultimateMessage", author=user, chat=chat)
-    MessageFactory(text="LastMessage", author=user, chat=chat)
+    MessageFactory(author=user, chat=chat)
+    last_message = MessageFactory(author=user, chat=chat)
 
     serializer = ChatSerializer(chat)
 
-    assert serializer.data["last_message"].text == "LastMessage"
+    assert serializer.data["last_message"].text == last_message.text
 
 
 @pytest.mark.django_db
-def test__chat_serializer_get_last_message_when_none():
+def test__get_last_message__when_none():
     chat = ChatFactory()
 
     serializer = ChatSerializer(chat)

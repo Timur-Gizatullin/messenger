@@ -8,15 +8,11 @@ class ChatFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Chat
 
-    class Params:
-        users = factory.SubFactory(UserFactory)
+    @factory.post_generation
+    def users(self, create, extracted, **kwargs):
+        if not create:
+            return
 
-    @classmethod
-    def create(cls, **kwargs):
-        chat = super(ChatFactory, cls).create(**kwargs)
-        users = kwargs.get("users", None)
-
-        if users:
-            chat.users.set(users)
-
-        return chat
+        if extracted:
+            for user in extracted:
+                self.users.add(user)
