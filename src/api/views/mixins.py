@@ -11,7 +11,7 @@ class WebSocketMixin:
     def send_data_to_ws(self, data):
         channel_layer = get_channel_layer()
 
-        group_name = self.key_schema.get_key(data['chat']['pk'])
+        group_name = self.key_schema.get_key(data['chat'])
         data = json.dumps(data)
 
         async_to_sync(channel_layer.group_send)(

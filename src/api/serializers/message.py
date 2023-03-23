@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from core.models import Message, Chat, User
 
@@ -25,56 +26,37 @@ class MessageMessageSerializer(serializers.ModelSerializer):
 
 
 class MessageSerializer(serializers.ModelSerializer):
-    author = MessageUserSerializer(required=True)
-    chat = MessageChatSerializer(required=True)
     replied_to = MessageMessageSerializer(required=False, allow_null=True)
-    forwarded_by = MessageUserSerializer(required=False, allow_null=True)
     picture = serializers.ImageField(required=False, allow_null=True)
 
     def create(self, validated_data):
-        text = validated_data["text"]
-
         message = Message.objects.create(**validated_data)
         message.save()
         return message
 
     def validate(self, attrs):
-        author = attrs['author']["pk"]
-        chat = attrs['chat']["pk"]
         replied_to = attrs.get("replied_to", None)
-        forwarded_by = attrs.get("forwarded_by", None)
         picture = attrs.get('picture', None)
         text = attrs.get('text', None)
+        chat_id = self.initial_data["chat"]
+        author = self.initial_data["author"]
 
-        chat_queryset = Chat.objects.all().filter(pk=chat)
-        user_queryset = User.objects.all()
-        current_user = self.context["request"].user
+        chat_queryset = Chat.objects.all().filter(pk=chat_id)
 
-        if current_user.is_deleted \
-                or ((not forwarded_by and current_user.id != author)
-                    or (forwarded_by and current_user.id != forwarded_by["pk"])):
-            raise serializers.ValidationError("Impossible to use this account")
-        elif not chat_queryset.filter(users__id=author):
+        if not chat_queryset.filter(users__id=author.pk):
             raise serializers.ValidationError("Impossible to send message to the chat")
         elif chat_queryset.filter(is_dialog=True).filter(users__is_deleted=True):
             raise serializers.ValidationError("A member is deleted")
-        elif picture is None and text is None:
+        elif picture is None and (text is None or text.strip() == ""):
             raise serializers.ValidationError("text or picture should be filled")
         elif replied_to:
-            message_replied_to = Message.objects.get(pk=replied_to["pk"])
-            if message_replied_to.chat != chat:
+            message_replied_to = get_object_or_404(Message, pk=replied_to["pk"])
+            attrs["replied_to"] = message_replied_to
+            if message_replied_to.chat != chat_id:
                 raise serializers.ValidationError("Can not reply to this chat")
 
-        attrs["author"] = user_queryset.get(pk=author)
+        attrs["author"] = author
         attrs["chat"] = chat_queryset.get()
-        if replied_to:
-            attrs["replied_to"] = Message.objects.get(pk=replied_to["pk"])
-        else:
-            attrs["replied_to"] = None
-        if forwarded_by:
-            attrs["forwarded_by"] = user_queryset.get(pk=forwarded_by["pk"])
-        else:
-            attrs["forwarded_by"] = None
         attrs["picture"] = picture
         attrs["text"] = text
 
@@ -83,4 +65,9 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         exclude = ["created_at", "updated_at", ]
-        extra_kwargs = {"text": {"max_length": 255, "allow_null": True, "allow_blank": True}}
+        extra_kwargs = {
+            "text": {"max_length": 255, "allow_null": True, "allow_blank": True},
+            "chat": {"read_only": True},
+            "author": {"read_only": True},
+            "forwarded_by": {"read_only": True}
+        }

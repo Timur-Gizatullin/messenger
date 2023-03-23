@@ -29,8 +29,10 @@ class ChatViewSet(ChatWSMixin, CreateModelMixin, ListModelMixin, GenericViewSet)
         elif self.action == "list":
             return ChatSerializer
         
-    @action(detail=False, methods=["POST"])
-    def add_message(self, request):
+    @action(detail=True, methods=["POST"])
+    def add_message(self, request, pk):
+        request.data["chat"] = pk
+        request.data["author"] = request.user
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
