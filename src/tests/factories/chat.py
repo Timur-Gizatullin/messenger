@@ -1,7 +1,6 @@
 import factory
 
 from core.models import Chat
-from tests.factories.user import UserFactory
 
 
 class ChatFactory(factory.django.DjangoModelFactory):
