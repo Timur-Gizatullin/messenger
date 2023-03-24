@@ -38,6 +38,8 @@ class MessageForwardSerializer(serializers.Serializer):
         message_ids = attrs.pop("message_ids")
         messages = Message.objects.all().filter(id__in=message_ids).get()
 
+        if not Chat.objects.all().filter(pk=attrs["forward_to"]):
+            raise serializers.ValidationError("Chat does not exist")
         for message in messages:
             if not Chat.objects.all().filter(pk=message.chat).filter(users=user):
                 raise serializers.ValidationError("Can't reach the message")
