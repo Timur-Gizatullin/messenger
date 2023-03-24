@@ -29,33 +29,6 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
-    @swagger_auto_schema(manual_parameters=[limit, offset])
-    @action(detail=True, methods=["GET"], url_path="messages")
-    def get_messages(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        paginator = LimitOffsetPagination()
-        page = paginator.paginate_queryset(queryset, request, view=self)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
-    def delete_message(self, request, *args, **kwargs):
-        if not self.queryset.filter(Q(pk=kwargs["pk"]) & Q(users=request.user)):
-            return Response({"Message": "Can't reach the message"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = request.user
-        queryset = self.filter_queryset(self.get_queryset())
-
-        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
-        instance.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
     def get_queryset(self):
         if self.action == "get_messages" or self.action == "delete_message":
             return Message.objects.all()
@@ -82,3 +55,30 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
+
+    @swagger_auto_schema(manual_parameters=[limit, offset])
+    @action(detail=True, methods=["GET"], url_path="messages")
+    def get_messages(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        paginator = LimitOffsetPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
+    def delete_message(self, request, *args, **kwargs):
+        if not self.queryset.filter(Q(pk=kwargs["pk"]) & Q(users=request.user)):
+            return Response({"Message": "Can't reach the message"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = request.user
+        queryset = self.filter_queryset(self.get_queryset())
+
+        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
+        instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
