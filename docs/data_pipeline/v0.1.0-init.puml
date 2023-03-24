@@ -21,11 +21,7 @@ end alt
 
 Postgres --> Backend: PSQL: user
 Backend -> Postgres: PSQL: Get chats by user.id
-Postgres --> Backend: PSQL: chats
-loop for chat in chats
-Backend -> Postgres: PSQL: Get last message by chat.id
-Postgres --> Backend: PSQL: last messages
-end loop
+Postgres --> Backend: PSQL: chats (contains last_msg)
 Backend --> Frontend: HTTP: chats with last message
 
 
