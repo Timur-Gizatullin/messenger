@@ -1,8 +1,8 @@
 from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
 from rest_framework import serializers
+from rest_framework.authtoken.models import Token
 
-from core.models import User, Chat
+from core.models import Chat, User
 
 
 class AuthSignUpSerializer(serializers.ModelSerializer):
@@ -45,6 +45,7 @@ class AuthUserOutputSerializer(serializers.ModelSerializer):
         tokens = Token.objects.get_or_create(user=user)
 
         return tokens[0].key
+
 
 class AuthSignInSerializer(serializers.Serializer):
     email = serializers.EmailField()
