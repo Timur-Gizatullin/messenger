@@ -19,7 +19,7 @@ def test__get_last_message__when_exist():
 
 
 @pytest.mark.django_db
-def test__get_last_message__when_none():
+def test__get_last_message__when_not_exist():
     chat = ChatFactory()
 
     serializer = ChatSerializer(chat)
