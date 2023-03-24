@@ -48,3 +48,8 @@ class MessageForwardSerializer(serializers.Serializer):
         attrs["user"] = user
 
         return attrs
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = "__all__"
