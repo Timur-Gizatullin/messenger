@@ -1,9 +1,10 @@
 from copy import copy
 
+from django.db.models import Q
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
-from core.models import Message, Chat
+from core.models import Chat, Message
 
 
 class MessageChatSerializer(serializers.ModelSerializer):
@@ -50,7 +51,7 @@ class MessageForwardSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         message_ids = [message["pk"] for message in attrs.pop("message_ids")]
         messages = Message.objects.all().filter(id__in=message_ids)
-        forward_to = get_object_or_404(Chat, pk=attrs["forward_to"]["pk"])
+        forward_to = get_object_or_404(Chat, Q(users__in=[user]), pk=attrs["forward_to"]["pk"])
 
         for message in messages:
             if not Chat.objects.all().filter(pk=message.chat.pk).filter(users=user):
