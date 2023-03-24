@@ -5,6 +5,7 @@ from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
@@ -21,8 +22,6 @@ offset = openapi.Parameter(
     type=openapi.TYPE_INTEGER,
 )
 
-paginator = LimitOffsetPagination()
-
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
@@ -30,38 +29,38 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
-    def get_messages(self, request, pk):
-        return self.list(request)
+    def get_messages(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        paginator = LimitOffsetPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def get_queryset(self):
         if self.action == "get_messages":
             return Message.objects.all()
-        else:
-            return Chat.objects.all()
 
-    def paginate_queryset(self, queryset):
-        if self.action == "get_messages":
-            return paginator.paginate_queryset(queryset, self.request, view=self)
-        else:
-            return None
-
-    def get_paginated_response(self, data):
-        return paginator.get_paginated_response(data)
+        return Chat.objects.all()
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":
             return super().filter_queryset(queryset).filter(users=self.request.user)
-        elif self.action == "get_messages":
+        if self.action == "get_messages":
             return (
                 super().filter_queryset(queryset).filter(chat__users=self.request.user).filter(chat=self.kwargs["pk"])
             )
-        else:
-            return super().filter_queryset(queryset)
+
+        return super().filter_queryset(queryset)
 
     def get_serializer_class(self):
         if self.action == "list":
             return ChatSerializer
-        elif self.action == "create":
+        if self.action == "create":
             return ChatCreateSerializer
-        elif self.action == "get_messages":
+        if self.action == "get_messages":
             return MessageSerializer
