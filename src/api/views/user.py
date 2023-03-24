@@ -4,11 +4,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 
-class ChatViewSet(GenericViewSet):
-
-    @action(detail=False, methods=["POST"])
-    def upload_profile_picture(self, request):
-        picture = request.data["file"]
+class UserViewSet(GenericViewSet):
+    @action(detail=False, methods=["PATCH"])
+    def upload_profile_picture(self, request, *args, **kwargs):
+        picture = request.data["image"]
         user = request.user
         user.profile_picture = picture
         user.save()
