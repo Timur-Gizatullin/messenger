@@ -1,53 +1,67 @@
 from copy import copy
 
 from rest_framework import serializers
+from rest_framework.generics import get_object_or_404
 
 from core.models import Message, Chat
 
 
 class MessageChatSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Chat
         fields = ["pk"]
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
 class MessageMessageSerializer(serializers.ModelSerializer):
     class Meta:
+        model = Message
         fields = ["pk"]
-        extra_kwargs = {"pk": {"read_only": True}}
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
-class MessageForwardSerializer(serializers.Serializer):
-    forward_to = MessageChatSerializer()
-    message_ids = MessageMessageSerializer(many=True)
+class MessageForwardSerializer(serializers.ModelSerializer):
+    forward_to = MessageChatSerializer(write_only=True)
+    message_ids = MessageMessageSerializer(many=True, write_only=True)
 
     class Meta:
-        fields = ["forward_to", "message_ids", ]
+        model = Message
+        fields = "__all__"
+        extra_kwargs = {
+            "text": {"read_only": True},
+            "author": {"read_only": True},
+            "chat": {"read_only": True},
+            "replied_to": {"read_only": True},
+            "forwarded_by": {"read_only": True},
+        }
 
     def create(self, validated_data):
         new_messages = copy(validated_data["messages"])
+
         for message in new_messages:
             message.forwarded_by = validated_data["user"]
             message.chat = validated_data["forward_to"]
-            message = Message.objects.create(message)
+            message.pk = None
             message.save()
 
         return new_messages
 
     def validate(self, attrs):
         user = self.context["request"].user
-        message_ids = attrs.pop("message_ids")
-        messages = Message.objects.all().filter(id__in=message_ids).get()
+        message_ids = [message["pk"] for message in attrs.pop("message_ids")]
+        messages = Message.objects.all().filter(id__in=message_ids)
+        forward_to = get_object_or_404(Chat, pk=attrs["forward_to"]["pk"])
 
-        if not Chat.objects.all().filter(pk=attrs["forward_to"]):
-            raise serializers.ValidationError("Chat does not exist")
         for message in messages:
-            if not Chat.objects.all().filter(pk=message.chat).filter(users=user):
+            if not Chat.objects.all().filter(pk=message.chat.pk).filter(users=user):
                 raise serializers.ValidationError("Can't reach the message")
 
         attrs["messages"] = messages
+        attrs["forward_to"] = forward_to
         attrs["user"] = user
 
         return attrs
+
 
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
