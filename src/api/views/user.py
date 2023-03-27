@@ -1,13 +1,13 @@
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
-from rest_framework.authentication import BasicAuthentication
+from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from api.serializers.user import UserSerializer
-from api.views.mixins import offset, limit
+from api.utils import limit, offset
+
 from core.models import User
 
 

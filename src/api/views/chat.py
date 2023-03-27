@@ -9,7 +9,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
-from api.views.mixins import limit, offset
+from api.utils import limit, offset
 from core.models import Chat, Message
 
 
