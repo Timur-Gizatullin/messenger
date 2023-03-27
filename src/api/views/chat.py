@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
-from api.serializers.message import MessageSerializer, MessageCreateSerializer
+from api.serializers.message import MessageCreateSerializer, MessageSerializer
 from api.views.mixins import ChatWSMixin
 from core.models import Chat, Message
 
@@ -68,7 +68,7 @@ class ChatViewSet(ChatWSMixin, CreateModelMixin, ListModelMixin, GenericViewSet)
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
-        
+
     @action(detail=True, methods=["POST"])
     def add_message(self, request, pk):
         request.data["chat"] = pk
@@ -80,5 +80,5 @@ class ChatViewSet(ChatWSMixin, CreateModelMixin, ListModelMixin, GenericViewSet)
         ChatWSMixin.send_data_to_ws(self, serializer.data)
 
         return Response(
-                MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
-            )
+            MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
+        )

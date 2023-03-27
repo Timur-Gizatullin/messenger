@@ -1,28 +1,28 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
-from core.models import Message, Chat, User
+from core.models import Chat, Message, User
 
 
 class MessageUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['pk']
-        extra_kwargs = {'pk': {'read_only': False}}
+        fields = ["pk"]
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
 class MessageChatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Chat
-        fields = ['pk']
-        extra_kwargs = {'pk': {'read_only': False}}
+        fields = ["pk"]
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
 class MessageMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = ['pk']
-        extra_kwargs = {'pk': {'read_only': False}}
+        fields = ["pk"]
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
 class MessageCreateSerializer(serializers.ModelSerializer):
@@ -36,8 +36,8 @@ class MessageCreateSerializer(serializers.ModelSerializer):
 
     def validate(self, attrs):
         replied_to = attrs.get("replied_to", None)
-        picture = attrs.get('picture', None)
-        text = attrs.get('text', None)
+        picture = attrs.get("picture", None)
+        text = attrs.get("text", None)
         chat_id = self.initial_data["chat"]
         author = self.initial_data["author"]
 
@@ -64,12 +64,15 @@ class MessageCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        exclude = ["created_at", "updated_at", ]
+        exclude = [
+            "created_at",
+            "updated_at",
+        ]
         extra_kwargs = {
             "text": {"max_length": 255, "allow_null": True, "allow_blank": True},
             "chat": {"read_only": True},
             "author": {"read_only": True},
-            "forwarded_by": {"read_only": True}
+            "forwarded_by": {"read_only": True},
         }
 
 
