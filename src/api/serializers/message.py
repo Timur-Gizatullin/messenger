@@ -3,21 +3,6 @@ from rest_framework.generics import get_object_or_404
 
 from core.models import Chat, Message, User
 
-
-class MessageUserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["pk"]
-        extra_kwargs = {"pk": {"read_only": False}}
-
-
-class MessageChatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Chat
-        fields = ["pk"]
-        extra_kwargs = {"pk": {"read_only": False}}
-
-
 class MessageMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
