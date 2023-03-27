@@ -11,7 +11,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageCreateSerializer, MessageSerializer
-from api.views.mixins import ChatWSMixin
+from api.views.mixins import ChatWebSocketMixin
 from core.models import Chat, Message
 
 limit = openapi.Parameter(
@@ -25,7 +25,7 @@ offset = openapi.Parameter(
 )
 
 
-class ChatViewSet(ChatWSMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
+class ChatViewSet(ChatWebSocketMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
@@ -77,7 +77,7 @@ class ChatViewSet(ChatWSMixin, CreateModelMixin, ListModelMixin, GenericViewSet)
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        ChatWSMixin.send_data_to_ws(self, serializer.data)
+        self.distribute_to_ws_consumers(serializer.data)
 
         return Response(
             MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED

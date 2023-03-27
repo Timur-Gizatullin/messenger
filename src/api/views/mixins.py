@@ -6,8 +6,8 @@ from channels.layers import get_channel_layer
 from core.utils.key_schemas import BaseKeySchema
 
 
-class WebSocketMixin:
-    def send_data_to_ws(self, data):
+class WebSocketDistributorMixin:
+    def distribute_to_ws_consumers(self, data):
         channel_layer = get_channel_layer()
 
         group_name = self.key_schema.get_key(data["chat"])
@@ -16,11 +16,11 @@ class WebSocketMixin:
         async_to_sync(channel_layer.group_send)(
             group_name,
             {
-                "type": "chat.notify",
+                "type": "chat.message",
                 "content": data,
             },
         )
 
 
-class ChatWSMixin(WebSocketMixin):
+class ChatWebSocketMixin(WebSocketDistributorMixin):
     key_schema = BaseKeySchema(prefix="chat")

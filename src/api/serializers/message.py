@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.generics import get_object_or_404
 
-from core.models import Chat, Message, User
+from core.models import Chat, Message
+
 
 class MessageMessageSerializer(serializers.ModelSerializer):
     class Meta:
