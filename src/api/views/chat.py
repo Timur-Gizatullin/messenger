@@ -72,13 +72,11 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
     @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
     def delete_message(self, request, *args, **kwargs):
-        if not self.queryset.filter(Q(pk=kwargs["pk"]) & Q(users=request.user)):
-            return Response({"Message": "Can't reach the message"}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = request.user
         queryset = self.filter_queryset(self.get_queryset())
 
-        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
+        instance = get_object_or_404(
+            queryset, Q(chat=kwargs["pk"]) & Q(chat__users=request.user), pk=kwargs["message_id"]
+        )
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
