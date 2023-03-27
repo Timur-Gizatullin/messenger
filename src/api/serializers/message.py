@@ -25,7 +25,7 @@ class MessageMessageSerializer(serializers.ModelSerializer):
         extra_kwargs = {'pk': {'read_only': False}}
 
 
-class MessageSerializer(serializers.ModelSerializer):
+class MessageCreateSerializer(serializers.ModelSerializer):
     replied_to = MessageMessageSerializer(required=False, allow_null=True)
     picture = serializers.ImageField(required=False, allow_null=True)
 
@@ -71,3 +71,9 @@ class MessageSerializer(serializers.ModelSerializer):
             "author": {"read_only": True},
             "forwarded_by": {"read_only": True}
         }
+
+
+class MessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = "__all__"

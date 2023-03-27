@@ -6,16 +6,10 @@ from core.models.mixins import CreatedAtUpdatedAtMixin
 
 class Message(CreatedAtUpdatedAtMixin):
     author = models.ForeignKey(
-        "User",
-        on_delete=models.SET(constants.DELETED_USER),
-        related_name="messages",
-        verbose_name="Отправитель",
+        "User", on_delete=models.SET("DELETED"), related_name="messages", verbose_name="Отправитель"
     )
     chat = models.ForeignKey(
-        "Chat",
-        on_delete=models.CASCADE,
-        related_name="messages",
-        verbose_name="Чат, содержащий данное сообщение",
+        "Chat", on_delete=models.CASCADE, related_name="messages", verbose_name="Чат, содержащий данное сообщение"
     )
     replied_to = models.ForeignKey(
         "Message",
@@ -33,12 +27,5 @@ class Message(CreatedAtUpdatedAtMixin):
         blank=True,
         verbose_name="Кем сообщение было переслано",
     )
-    text = models.CharField(
-        max_length=255, null=True, blank=True, verbose_name="Текст сообщения"
-    )
-    picture = models.ImageField(
-        null=True,
-        blank=True,
-        verbose_name="Картинка сообщения",
-        upload_to="chat_pictures",
-    )
+    text = models.CharField(max_length=255, null=True, blank=True, verbose_name="Текст сообщения")
+    picture = models.ImageField(null=True, blank=True, verbose_name="Картинка сообщения", upload_to="chat_pictures")

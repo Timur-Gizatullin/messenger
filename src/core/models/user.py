@@ -1,3 +1,5 @@
+from typing import List
+
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
@@ -38,13 +40,15 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
     username = None
     date_joined = None
     email = models.EmailField(max_length=255, unique=True, verbose_name="Почта пользователя")
-    profile_picture = models.ImageField(null=True, blank=True, verbose_name="Фотография профиля", upload_to='user_profile_pictures')
+    profile_picture = models.ImageField(
+        null=True, blank=True, verbose_name="Фотография профиля", upload_to="user_profile_pictures"
+    )
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
     objects = UserManager()
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = []
+    REQUIRED_FIELDS: List[str] = []
 
     def __str__(self):
         return self.email

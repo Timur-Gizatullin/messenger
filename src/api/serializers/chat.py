@@ -1,13 +1,14 @@
 from rest_framework import serializers
 
+from api.serializers.message import MessageSerializer
 from core.models import Chat, Message, User
 
 
 class ChatUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['pk']
-        extra_kwargs = {'pk': {'read_only': False}}
+        fields = ["pk"]
+        extra_kwargs = {"pk": {"read_only": False}}
 
 
 class ChatSerializer(serializers.ModelSerializer):
@@ -23,7 +24,8 @@ class ChatSerializer(serializers.ModelSerializer):
     def get_last_message(self, chat: Chat) -> Message:
         message = Message.objects.filter(chat=chat.pk).reverse().first()
         if message:
-            message = message.pk
+            message = MessageSerializer(message)
+            return message.data
         return message
 
 
@@ -31,9 +33,9 @@ class ChatCreateSerializer(ChatSerializer):
     users = ChatUserSerializer(many=True)
 
     def validate(self, attrs):
-        users = attrs['users']
-        users = [user['pk'] for user in users]
-        is_dialog = attrs['is_dialog']
+        users = attrs["users"]
+        users = [user["pk"] for user in users]
+        is_dialog = attrs["is_dialog"]
         request = self.context["request"]
         users_count = len(users)
 
@@ -52,8 +54,10 @@ class ChatCreateSerializer(ChatSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_users = validated_data.pop('users')
+        validated_users = validated_data.pop("users")
         chat = Chat.objects.create(**validated_data)
         users_queryset = User.objects.all().filter(pk__in=validated_users)
         chat.users.set(users_queryset)
+        chat.save()
+
         return chat
