@@ -1,3 +1,4 @@
+from django.db.models import QuerySet
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin
@@ -6,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 from api.serializers.user import UserSerializer
-from api.utils import limit, offset
+from api.utils import limit, offset, default_limit, email
 
 from core.models import User
 
@@ -19,9 +20,19 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
         if self.action == "list":
             return UserSerializer
 
-    @swagger_auto_schema(manual_parameters=[limit, offset])
+    def filter_queryset(self, queryset: QuerySet) -> QuerySet:
+        if self.action == "list":
+            return super().filter_queryset(queryset).filter(email__contains=self.request.query_params["email"])
+
+    def get_queryset(self):
+        return User.objects.all()
+
+    @swagger_auto_schema(manual_parameters=[limit, offset, email])
     def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.get_queryset()
+
+        if request.query_params.get("email", None):
+            queryset = self.filter_queryset(queryset)
 
         paginator = LimitOffsetPagination()
         page = paginator.paginate_queryset(queryset, request, view=self)

@@ -9,3 +9,6 @@ offset = openapi.Parameter(
     description="The initial index from which to return the results.",
     type=openapi.TYPE_INTEGER,
 )
+email = openapi.Parameter("email", openapi.IN_QUERY, description="user's email to find one", type=openapi.TYPE_STRING)
+
+default_limit = 10
