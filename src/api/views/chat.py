@@ -30,7 +30,7 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     queryset = Chat.objects.all()
 
     def get_queryset(self):
-        if self.action == "get_messages" or self.action == "delete_message":
+        if self.action in ("get_messages", "delete_message"):
             return Message.objects.all()
 
         return Chat.objects.all()
@@ -43,8 +43,14 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
                 super().filter_queryset(queryset).filter(chat__users=self.request.user).filter(chat=self.kwargs["pk"])
             )
         if self.action == "delete_message":
-            user = self.request.user
-            return super().filter_queryset(queryset).filter(Q(author=user) | Q(forwarded_by=user))
+            return (
+                super()
+                .filter_queryset(queryset)
+                .filter(
+                    Q(author=self.request.user)
+                    | Q(forwarded_by=self.request.user) & Q(chat=self.kwargs["pk"]) & Q(chat__users=self.request.user)
+                )
+            )
 
         return super().filter_queryset(queryset)
 
@@ -74,9 +80,7 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     def delete_message(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        instance = get_object_or_404(
-            queryset, Q(chat=kwargs["pk"]) & Q(chat__users=request.user), pk=kwargs["message_id"]
-        )
+        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
