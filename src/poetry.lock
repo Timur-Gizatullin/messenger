@@ -262,6 +262,26 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-stdimage"
+version = "6.0.1"
+description = "Django Standarized Image Field"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-stdimage-6.0.1.tar.gz", hash = "sha256:887fa1da6e53c38a4c0f717d7b1dcd9ce0bf04d1a9e77591c32b94c611e56769"},
+    {file = "django_stdimage-6.0.1-py2.py3-none-any.whl", hash = "sha256:67984acde2a8077e49a43998856b7571ffe0a90e23cb578267c1b0ed454e3e5f"},
+]
+
+[package.dependencies]
+Django = ">=2.2"
+pillow = ">=2.5"
+
+[package.extras]
+progressbar = ["progressbar2 (>=3.0.0)"]
+test = ["pytest", "pytest-cov", "pytest-django"]
+
+[[package]]
 name = "djangorestframework"
 version = "3.14.0"
 description = "Web APIs for Django, made easy."
@@ -1085,4 +1105,4 @@ socks = ["PySocks (>=1.5.6,!=1.5.7,<2.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "5d5b29025a330fea6121d28c6293f68b52465d8bc59a39f97dc0330afefa8823"
+content-hash = "d2a2e4915098fd70a429fca653f5c182ab999c5d0cd9a2c6bc10185d2cf733bf"
