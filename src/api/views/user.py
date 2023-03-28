@@ -24,8 +24,7 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
         if self.action == "list":
             return super().filter_queryset(queryset).filter(email__contains=self.request.query_params["email"])
 
-    def get_queryset(self):
-        return User.objects.all()
+        return super().filter_queryset(queryset)
 
     @swagger_auto_schema(manual_parameters=[limit, offset, email])
     def list(self, request, *args, **kwargs):
