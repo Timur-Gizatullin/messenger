@@ -4,7 +4,7 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from stdimage import StdImageField
-from stdimage.validators import MinSizeValidator, MaxSizeValidator
+from stdimage.validators import MaxSizeValidator, MinSizeValidator
 
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
@@ -43,8 +43,11 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
     date_joined = None
     email = models.EmailField(max_length=255, unique=True, verbose_name="Почта пользователя")
     profile_picture = StdImageField(
-        null=True, blank=True, verbose_name="Фотография профиля", upload_to="user_profile_pictures",
-        validators=[MinSizeValidator(200, 100), MaxSizeValidator(1028, 768)]
+        null=True,
+        blank=True,
+        verbose_name="Фотография профиля",
+        upload_to="user_profile_pictures",
+        validators=[MinSizeValidator(200, 100), MaxSizeValidator(1028, 768)],
     )
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
@@ -54,4 +57,4 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
     REQUIRED_FIELDS: List[str] = []
 
     def __str__(self):
-            return self.email
+        return self.email
