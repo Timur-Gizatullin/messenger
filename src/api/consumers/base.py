@@ -1,3 +1,5 @@
+import json
+
 from channels.generic.websocket import AsyncWebsocketConsumer
 from loguru import logger
 
@@ -17,5 +19,5 @@ class BaseConsumer(AsyncWebsocketConsumer):
         logger.info("ws disconnected")
 
     async def chat_message(self, event):
-        logger.info(f"ws send: {event}")
-        await self.send(text_data=event["content"])
+        logger.info(f"ws send: {event['content']}")
+        await self.send(text_data=json.dumps(event["content"]))

@@ -11,8 +11,9 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageCreateSerializer, MessageSerializer
-from api.views.mixins import ChatWebSocketMixin
+from api.views.mixins import ChatWebSocketDistributorMixin
 from core.models import Chat, Message
+from core.utils.enums import Action
 
 limit = openapi.Parameter(
     "limit", openapi.IN_QUERY, description="Number of results to return per page.", type=openapi.TYPE_INTEGER
@@ -25,7 +26,7 @@ offset = openapi.Parameter(
 )
 
 
-class ChatViewSet(ChatWebSocketMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
+class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Chat.objects.all()
 
@@ -71,13 +72,12 @@ class ChatViewSet(ChatWebSocketMixin, CreateModelMixin, ListModelMixin, GenericV
 
     @action(detail=True, methods=["POST"])
     def add_message(self, request, pk):
-        request.data["chat"] = pk
-        request.data["author"] = request.user
-        serializer = self.get_serializer(data=request.data)
+        context = {"request": request, "pk": pk}
+        serializer = self.get_serializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        self.distribute_to_ws_consumers(serializer.data)
+        self.distribute_to_ws_consumers(serializer.data, Action.CREATE)
 
         return Response(
             MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED

@@ -28,4 +28,3 @@ class Message(CreatedAtUpdatedAtMixin):
         verbose_name="Кем сообщение было переслано",
     )
     text = models.CharField(max_length=255, null=True, blank=True, verbose_name="Текст сообщения")
-    picture = models.ImageField(null=True, blank=True, verbose_name="Картинка сообщения", upload_to="chat_pictures")
