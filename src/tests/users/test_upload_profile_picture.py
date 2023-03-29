@@ -32,18 +32,51 @@ from tests.factories.user import UserFactory
 def test__upload_profile_picture__success_case(size, api_client):
     user = UserFactory()
     image_data = BytesIO()
+    image_data.name = "test.png"
     image = Image.new("RGB", size, "white")
     image.save(image_data, format="png")
     image_data.seek(0)
-
-    payload = {"profile_picture": SimpleUploadedFile("test.png", image_data.read(), content_type="image/png")}
+    payload = {"profile_picture": image_data}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("user-upload-profile-picture"), payload, format="multipart")
+    response = api_client.post(reverse("user-upload-profile-picture"), data=payload)
 
-    assert response.status_code == status.HTTP_204_NO_CONTENT
-    patched_user = User.objects.get(pk=user.pk)
-    assert patched_user.profile_picture is not None
+    assert response.status_code == status.HTTP_200_OK
+    assert user.profile_picture is not None
+    assert response.data["pk"] == user.pk
+
+
+@pytest.mark.parametrize(
+    "size",
+    [
+        [
+            100,
+            50,
+        ],
+        [
+            1030,
+            768,
+        ],
+        [
+            1028,
+            800,
+        ],
+    ],
+)
+@pytest.mark.django_db
+def test__upload_profile_picture__when_wrong_size(size, api_client):
+    user = UserFactory()
+    image_data = BytesIO()
+    image_data.name = "test.png"
+    image = Image.new("RGB", size, "white")
+    image.save(image_data, format="png")
+    image_data.seek(0)
+    payload = {"profile_picture": image_data}
+
+    api_client.force_authenticate(user=user)
+    response = api_client.post(reverse("user-upload-profile-picture"), data=payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
 @pytest.mark.django_db

@@ -11,9 +11,8 @@ class UploadProfilePicSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = [
-            "profile_picture",
-        ]
+        fields = ["pk", "email", "profile_picture", ]
+        extra_kwargs = {"email": {"read_only": True}}
 
     def create(self, validated_data):
         user = self.context["request"].user

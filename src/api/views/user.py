@@ -29,10 +29,8 @@ class UserViewSet(GenericViewSet):
 
     @action(detail=False, methods=["POST"])
     def upload_profile_picture(self, request, *args, **kwargs):
-        picture = request.FILES
-
-        serializer = self.get_serializer(data=picture)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
 
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.data, status=status.HTTP_200_OK)

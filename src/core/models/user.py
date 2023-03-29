@@ -48,6 +48,7 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
         verbose_name="Фотография профиля",
         upload_to="user_profile_pictures",
         validators=[MinSizeValidator(200, 100), MaxSizeValidator(1028, 768)],
+        variations={'thumbnail': {"width": 100, "height": 100, "crop": True}},
     )
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
