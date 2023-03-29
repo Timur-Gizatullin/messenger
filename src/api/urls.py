@@ -8,7 +8,7 @@ from api.views.user import UserViewSet
 
 router = routers.DefaultRouter()
 router.register("chats", ChatViewSet, basename="chat")
-router.register("auth", AuthViewSet)
+router.register("auth", AuthViewSet, basename="auth")
 router.register("users", UserViewSet, basename="user")
 
 urlpatterns = router.urls
