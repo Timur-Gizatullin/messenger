@@ -15,6 +15,8 @@ class MessageCreateSerializer(serializers.ModelSerializer):
 
         chat_queryset = Chat.objects.all().filter(pk=chat_id)
 
+        if text.strip() == "":
+            raise serializers.ValidationError("text field is required")
         if not chat_queryset.filter(users__id=author.pk):
             raise serializers.ValidationError("Impossible to send message to the chat")
         if chat_queryset.filter(is_dialog=True).filter(users__is_deleted=True):
