@@ -1,6 +1,5 @@
 from django.db.models import Q, QuerySet
 from django.shortcuts import get_object_or_404
-from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,17 +11,8 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
+from api.utils import limit, offset
 from core.models import Chat, Message
-
-limit = openapi.Parameter(
-    "limit", openapi.IN_QUERY, description="Number of results to return per page.", type=openapi.TYPE_INTEGER
-)
-offset = openapi.Parameter(
-    "offset",
-    openapi.IN_QUERY,
-    description="The initial index from which to return the results.",
-    type=openapi.TYPE_INTEGER,
-)
 
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
