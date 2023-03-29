@@ -24,6 +24,18 @@ def test__add_message__when_text_filled(api_client):
 
 
 @pytest.mark.django_db
+def test__add_message__when_text_is_empty(api_client):
+    user = UserFactory()
+    chat = ChatFactory(users=[user])
+    payload = {"text": " ", }
+
+    api_client.force_authenticate(user=user)
+    response = api_client.post(reverse("chat-add-message", args=[chat.pk]), data=payload)
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+@pytest.mark.django_db
 def test__add_message__when_text_and_replied_to_filled(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
@@ -38,7 +50,7 @@ def test__add_message__when_text_and_replied_to_filled(api_client):
     assert response.data["author"] == user.pk
     assert response.data["chat"] == chat.pk
     assert response.data["replied_to"] == message.pk
-
+    
 
 @pytest.mark.django_db
 def test__add_message__when_author_is_not_chat_member(api_client):
