@@ -7,6 +7,15 @@ updated_at: datetime <<generated>>
 *is_dialog: bool
 }
 
+entity Attachment {
+* pk
+__
+*created_at: datetime <<generated>>
+updated_at: datetime <<generated>>
+chat_id: number <<FK>>
+file: filefield
+}
+
 entity Message {
 * pk
 __
@@ -14,7 +23,6 @@ __
 *chat_id: number <<FK>>
 reply_to: number <<FK>>
 text: text
-picture: text <<PATH>>
 forward_by: number <<FK>>
 *sent_at: datetime <<generated>>
 }
@@ -28,7 +36,7 @@ __
 name: text
 surname: text
 updated_at: datetime
-profile_picture: text <<PATH>>
+profile_picture: imagefield
 }
 
 entity ChatUser {
@@ -36,6 +44,7 @@ entity ChatUser {
 __
 * chat_id: Number <<FK>>
 * user_id: Number <<FK>>
+* role: enum
 }
 
 
@@ -45,6 +54,8 @@ ChatUser }|-- Chat
 
 Message }|-- User
 Message }|-- Chat
+
+Attachment }|-- Chat
 
 Message ||--|| Message
 @enduml

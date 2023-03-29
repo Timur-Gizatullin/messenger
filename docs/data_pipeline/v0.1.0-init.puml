@@ -154,7 +154,7 @@ Backend --> Frontend: HTTP: Token
 
 
 == Get users with pagination ==
-Frontend -> Backend: HTTP GET: /api/users/ (limit + offset + auth_token)
+Frontend -> Backend: HTTP GET: /api/users/ (limit + offset + email + auth_token)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -163,24 +163,9 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get users on limit + offset filter
+Backend -> Postgres: PSQL: Get users on limit + offset + email filter
 Postgres --> Backend: PSQL:users
 Backend --> Frontend: users
-
-== Find user ==
-Frontend -> Backend: HTTP GET: /api/users/ (user_to_find + auth_token)
-Backend -> Postgres: PSQL: Get user by auth_token
-
-alt token not found
-Postgres --x Backend: PSQL: Not Found
-Backend --x Frontend: HTTP: 401
-end alt
-
-Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get user with filter string__contains = 'user_to_find'
-Postgres --> Backend: PSQL: user
-Backend --> Frontend: HTTP: user
-
 
 == Upload profile pic ==
 Frontend -> Backend: HTTP PATCH: /api/users/{id}/ (pic_to_upload + auth_token)
@@ -196,5 +181,150 @@ Postgres --> Backend: PSQL: user
 Backend -> Backend: Save pic_to_upload to media set path to user.pic
 Backend -> Postgres: PSQL: Update entity
 Postgres --> Backend: PSQL OK
+Backend --> Frontend: HTTP: 204
+
+
+== add attachment ==
+Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token+ file)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+Backend -> Postgres: PSQL: Get chat by id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: chat
+Backend -> Postgres: PSQL: insert file
+Postgres --> Backend: PSQL: file
+
+Backend -> Frontend: WS: file
+Backend --> Frontend: HTTP: 201
+
+== Delete attachment ==
+Frontend -> Backend: HTTP DELETE: /api/chats/{id}/attachments/{attachment_id}
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+Backend -> Postgres: PSQL: Get chat by id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: chat
+Backend -> Postgres: PSQL: Get attachment by attachment_id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: attachment
+Backend -> Postgres: PSQL: delete attachment
+Postgres --> Backend: PSQL: OK
+Backend -> Frontend: WS: attachment deleted
+Backend --> Frontend: HTTP: 204
+
+== Get attachments with pagination ==
+Frontend -> Backend: HTTP GET: /api/chats/{id}/attachments (limit + offset + auth_token)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+Backend -> Postgres: PSQL: Get chat by id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: chat
+Backend -> Postgres: PSQL: get attachments with limit offset
+Postgres --> Backend: PSQL: paginated attachments
+Backend --> Frontend: HTTP: 200 + attachments
+
+== set user role in chat ==
+Frontend -> Backend: HTTP PATCH: /api/chats/{id}/users/{user_id} (auth_token + new_role)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+
+Backend -> Postgres: PSQL: Get member by id and user_id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres -> Backend: PSQL: member
+Backend -> Postgres: PSQL: member.role = new_role
+Postgres --> Backend: PSQL: OK
+Backend --> Frontend: HTTP: 204
+
+== add user to chat ==
+Frontend -> Backend: HTTP PATCH: /api/chats/{id}/users (user_ids + auth_token)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+Backend -> Postgres: PSQL: Get chat by id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: chat
+Backend -> Postgres: PSQL: get members by user_ids
+Postgres --> Backend: PSQL: members
+Backend -> Postgres: PSQL: chat.users append members
+Postgres --> Backend: PSQL: OK
+Backend --> Frontend: HTTP: 204
+
+== delete user from chat ==
+Frontend -> Backend: HTTP DELETE: /api/chats/{id}/users/{user_id} (auth_token)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
+end alt
+
+Postgres --> Backend: PSQL: user
+Backend -> Postgres: PSQL: remove member by id and user_id
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: OK
 Backend --> Frontend: HTTP: 204
 @enduml
