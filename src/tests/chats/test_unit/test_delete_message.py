@@ -17,7 +17,7 @@ def test__delete_message__when_user_is_author(api_client):
     author = UserFactory()
     message = MessageFactory.create_batch(message_len_list, author=author, chat__users=[author])
 
-    message_to_delete_index = randint(1, message_len_list-1)
+    message_to_delete_index = randint(1, message_len_list - 1)
     api_client.force_authenticate(author)
     response = api_client.delete(
         reverse(
@@ -60,7 +60,7 @@ def test__delete_message__when_user_is_author_and_forwarder(api_client):
     author = UserFactory()
     message = MessageFactory.create_batch(message_len_list, author=author, forwarded_by=author, chat__users=[author])
 
-    message_to_delete_index = randint(1, message_len_list-1)
+    message_to_delete_index = randint(1, message_len_list - 1)
     api_client.force_authenticate(author)
     response = api_client.delete(
         reverse(
@@ -81,7 +81,7 @@ def test__delete_message__when_user_is_not_chat_member(api_client):
     not_chat_member = UserFactory()
     message = MessageFactory.create_batch(message_len_list, author=author, forwarded_by=forwarded_by)
 
-    message_to_delete_index = randint(1, message_len_list-1)
+    message_to_delete_index = randint(1, message_len_list - 1)
     api_client.force_authenticate(not_chat_member)
     response = api_client.delete(
         reverse(
@@ -100,7 +100,7 @@ def test__delete_message__when_user_is_chat_member_but_not_author(api_client):
     chat_member = UserFactory()
     message = MessageFactory.create_batch(message_len_list, author=author, chat__users=[author, chat_member])
 
-    message_to_delete_index = randint(1, message_len_list-1)
+    message_to_delete_index = randint(1, message_len_list - 1)
     api_client.force_authenticate(chat_member)
     response = api_client.delete(
         reverse(

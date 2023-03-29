@@ -4,8 +4,8 @@ from rest_framework import routers
 from api.openapi import schema_view
 from api.views import ChatViewSet
 from api.views.auth import AuthViewSet
-from api.views.user import UserViewSet
 from api.views.message import MessageViewSet
+from api.views.user import UserViewSet
 
 router = routers.DefaultRouter()
 router.register("chats", ChatViewSet, basename="chat")

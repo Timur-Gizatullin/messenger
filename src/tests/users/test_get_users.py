@@ -5,18 +5,20 @@ from rest_framework.reverse import reverse
 from tests.factories.user import UserFactory
 
 
-@pytest.mark.parametrize(("limit", "offset", "user_email", "expected_len"),
-                         [
-                             (10, 0, "", 10),
-                             (0, 0, "", 45),
-                             (10, 40, "", 5),
-                             (0, 0, "qw", 3),
-                             (0, 0, "qwer", 3),
-                             (0, 0, "qwertla1", 1),
-                             (0, 0, "", 45),
-                             (10, 0, "qw", 3),
-                             (4, 1, "qwer", 2)
-                         ])
+@pytest.mark.parametrize(
+    ("limit", "offset", "user_email", "expected_len"),
+    [
+        (10, 0, "", 10),
+        (0, 0, "", 45),
+        (10, 40, "", 5),
+        (0, 0, "qw", 3),
+        (0, 0, "qwer", 3),
+        (0, 0, "qwertla1", 1),
+        (0, 0, "", 45),
+        (10, 0, "qw", 3),
+        (4, 1, "qwer", 2),
+    ],
+)
 @pytest.mark.django_db
 def test__get_users__success_case(limit, offset, user_email, expected_len, api_client):
     users = UserFactory.create_batch(42)
