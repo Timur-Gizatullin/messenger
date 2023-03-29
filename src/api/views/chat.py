@@ -1,5 +1,5 @@
-from django.db.models import QuerySet
-from drf_yasg import openapi
+from django.db.models import Q, QuerySet
+from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -12,18 +12,10 @@ from rest_framework.viewsets import GenericViewSet
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageCreateSerializer, MessageSerializer
 from api.views.mixins import ChatWebSocketDistributorMixin
+from api.utils import limit, offset
 from core.models import Chat, Message
 from core.utils.enums import Action
 
-limit = openapi.Parameter(
-    "limit", openapi.IN_QUERY, description="Number of results to return per page.", type=openapi.TYPE_INTEGER
-)
-offset = openapi.Parameter(
-    "offset",
-    openapi.IN_QUERY,
-    description="The initial index from which to return the results.",
-    type=openapi.TYPE_INTEGER,
-)
 
 
 class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -31,7 +23,7 @@ class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixi
     queryset = Chat.objects.all()
 
     def get_queryset(self):
-        if self.action == "get_messages":
+        if self.action in ("get_messages", "delete_message"):
             return Message.objects.all()
 
         return Chat.objects.all()
@@ -42,6 +34,15 @@ class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixi
         if self.action == "get_messages":
             return (
                 super().filter_queryset(queryset).filter(chat__users=self.request.user).filter(chat=self.kwargs["pk"])
+            )
+        if self.action == "delete_message":
+            return (
+                super()
+                .filter_queryset(queryset)
+                .filter(
+                    Q(author=self.request.user)
+                    | Q(forwarded_by=self.request.user) & Q(chat=self.kwargs["pk"]) & Q(chat__users=self.request.user)
+                )
             )
 
         return super().filter_queryset(queryset)
@@ -69,6 +70,15 @@ class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixi
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
+    def delete_message(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
+        instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["POST"])
     def add_message(self, request, pk):
