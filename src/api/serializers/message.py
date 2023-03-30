@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 from core.models import Chat, Message
 
@@ -14,15 +13,12 @@ class MessageCreateSerializer(serializers.ModelSerializer):
         author = self.context["request"].user
 
         chat_queryset = Chat.objects.all().filter(pk=chat_id)
+        error_message = Chat.objects.validate_before_create(author.pk, chat_queryset)
 
-        if text.strip() == "":
-            raise serializers.ValidationError("text field is required")
-        if not chat_queryset.filter(users__id=author.pk):
-            raise serializers.ValidationError("Impossible to send message to the chat")
-        if chat_queryset.filter(is_dialog=True).filter(users__is_deleted=True):
-            raise serializers.ValidationError("A member is deleted")
+        if error_message:
+            raise serializers.ValidationError(error_message)
         if replied_to and replied_to.chat.pk != int(chat_id):
-            raise serializers.ValidationError("Can't reach the message")
+            raise serializers.ValidationError("The message is not a part of current chat")
 
         attrs["author"] = author
         attrs["chat"] = chat_queryset.get()
@@ -36,12 +32,7 @@ class MessageCreateSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        extra_kwargs = {
-            "chat": {"read_only": True},
-            "author": {"read_only": True},
-            "forwarded_by": {"read_only": True},
-            "text": {"required": True}
-        }
+        extra_kwargs = {"chat": {"read_only": True}, "author": {"read_only": True}, "forwarded_by": {"read_only": True}}
 
 
 class MessageSerializer(serializers.ModelSerializer):

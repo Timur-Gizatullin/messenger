@@ -27,4 +27,4 @@ class Message(CreatedAtUpdatedAtMixin):
         blank=True,
         verbose_name="Кем сообщение было переслано",
     )
-    text = models.CharField(max_length=255, null=True, blank=True, verbose_name="Текст сообщения")
+    text = models.CharField(max_length=255, null=False, verbose_name="Текст сообщения")

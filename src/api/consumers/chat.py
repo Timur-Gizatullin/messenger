@@ -3,4 +3,4 @@ from core.utils.key_schemas import BaseKeySchema
 
 
 class ChatConsumer(BaseConsumer):
-    key_schema = BaseKeySchema("chat")
+    key_schema = BaseKeySchema(prefix="chat")

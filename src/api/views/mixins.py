@@ -1,4 +1,3 @@
-import json
 from dataclasses import asdict
 
 from asgiref.sync import async_to_sync
@@ -14,14 +13,11 @@ class WebSocketDistributorMixin:
         channel_layer = get_channel_layer()
 
         group_name = self.key_schema.get_key(data["chat"])
-        data = json.dumps(data)
 
-        content = WSContent(action, data)
-        message = WSMessage("chat.message", content)
+        content = WSContent(type=action, data=data)
+        message = WSMessage(type="chat.message", content=content)
 
-        async_to_sync(channel_layer.group_send)(
-            group_name, asdict(message)
-        )
+        async_to_sync(channel_layer.group_send)(group_name, asdict(message))
 
 
 class ChatWebSocketDistributorMixin(WebSocketDistributorMixin):

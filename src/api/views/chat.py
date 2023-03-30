@@ -11,11 +11,10 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageCreateSerializer, MessageSerializer
-from api.views.mixins import ChatWebSocketDistributorMixin
 from api.utils import limit, offset
+from api.views.mixins import ChatWebSocketDistributorMixin
 from core.models import Chat, Message
 from core.utils.enums import Action
-
 
 
 class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixin, GenericViewSet):

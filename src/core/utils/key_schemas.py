@@ -2,7 +2,6 @@ from typing import Any
 
 
 class BaseKeySchema:
-    prefix: str
     delimiter = "_"
 
     def __init__(self, prefix: str):
