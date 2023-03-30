@@ -11,10 +11,8 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ['pk', 'email', "profile_picture"]
 
 
-class UploadProfilePicSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.ImageField(
-        required=True, validators=[MinSizeValidator(200, 100), MaxSizeValidator(1028, 768)]
-    )
+class UploadProfilePictureSerializer(serializers.ModelSerializer):
+    profile_picture = serializers.ImageField(required=True)
 
     class Meta:
         model = User
@@ -23,8 +21,7 @@ class UploadProfilePicSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context["request"].user
-        picture = validated_data["profile_picture"]
+        user.profile_picture = validated_data["profile_picture"]
         user.save()
-        user.profile_picture = picture
 
         return user
