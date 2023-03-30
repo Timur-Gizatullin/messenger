@@ -1,3 +1,4 @@
+import json
 from dataclasses import asdict
 
 from asgiref.sync import async_to_sync
@@ -9,11 +10,14 @@ from core.utils.key_schemas import BaseKeySchema
 
 
 class WebSocketDistributorMixin:
+    key_schema: BaseKeySchema
+
     def distribute_to_ws_consumers(self, data, action: Action):
         channel_layer = get_channel_layer()
 
         group_name = self.key_schema.get_key(data["chat"])
 
+        data = json.dumps(data)
         content = WSContent(type=action, data=data)
         message = WSMessage(type="chat.message", content=content)
 

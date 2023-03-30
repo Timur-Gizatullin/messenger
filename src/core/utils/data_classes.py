@@ -6,7 +6,7 @@ from core.utils.enums import Action
 @dataclass
 class WSContent:
     type: Action
-    data: dict
+    data: str
 
 
 @dataclass

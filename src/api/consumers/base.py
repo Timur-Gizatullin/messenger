@@ -8,8 +8,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
     group_name: str
 
     async def connect(self):
-        pk = self.scope["url_route"]["kwargs"]["pk"]
-        self.group_name = self.key_schema.get_key(pk)
+        self.group_name = self.key_schema.get_key(path=self.scope["path"])
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
         logger.info("connected to ws")
