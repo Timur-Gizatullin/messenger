@@ -23,7 +23,6 @@ class MessageViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         new_messages = serializer.save()
 
-        messages_response = MessageSerializer(data=new_messages, many=True)
-        messages_response.is_valid()
-
-        return Response(messages_response.data, status=status.HTTP_201_CREATED)
+        return Response(
+            MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED
+        )
