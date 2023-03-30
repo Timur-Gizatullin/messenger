@@ -1,4 +1,3 @@
-import json
 from dataclasses import asdict
 
 from asgiref.sync import async_to_sync
@@ -17,7 +16,6 @@ class WebSocketDistributorMixin:
 
         group_name = self.key_schema.get_key(postfix=data["chat"])
 
-        data = json.dumps(data)
         content = WSContent(type=action, data=data)
         message = WSMessage(type="chat.message", content=content)
 

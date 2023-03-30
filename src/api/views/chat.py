@@ -10,16 +10,13 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
-from api.serializers.message import MessageCreateSerializer, MessageSerializer
+from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
-from api.views.mixins import ChatWebSocketDistributorMixin
 from core.models import Chat, Message
-from core.utils.enums import Action
 
 
-class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
+class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Chat.objects.all()
 
     def get_queryset(self):
         if self.action in ("get_messages", "delete_message"):
@@ -53,8 +50,6 @@ class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixi
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
-        if self.action == "add_message":
-            return MessageCreateSerializer
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -78,16 +73,3 @@ class ChatViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, ListModelMixi
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=["POST"])
-    def add_message(self, request, pk):
-        context = {"request": request, "pk": pk}
-        serializer = self.get_serializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-        message = serializer.save()
-
-        self.distribute_to_ws_consumers(serializer.data, Action.CREATE)
-
-        return Response(
-            MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
-        )

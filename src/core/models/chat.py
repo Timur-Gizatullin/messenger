@@ -1,11 +1,12 @@
 from django.db import models
-from django.db.models import QuerySet
 
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
 
 class ChatManager(models.Manager):
-    def validate_before_create(self, user_id: int, queryset: QuerySet) -> str | None:
+    def validate_before_create(self, user_id: int, chat_id: int) -> str | None:
+        queryset = Chat.objects.filter(pk=chat_id)
+
         if not queryset.filter(users__id=user_id):
             return "User is not a member of the current chat"
         if queryset.filter(is_dialog=True).filter(users__is_deleted=True):
