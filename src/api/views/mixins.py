@@ -15,7 +15,7 @@ class WebSocketDistributorMixin:
     def distribute_to_ws_consumers(self, data, action: Action):
         channel_layer = get_channel_layer()
 
-        group_name = self.key_schema.get_key(data["chat"])
+        group_name = self.key_schema.get_key(postfix=data["chat"])
 
         data = json.dumps(data)
         content = WSContent(type=action, data=data)
