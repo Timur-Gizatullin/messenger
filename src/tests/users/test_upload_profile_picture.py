@@ -1,13 +1,11 @@
-import tempfile
 from io import BytesIO
 
 import pytest
-from django.core.files.uploadedfile import InMemoryUploadedFile, SimpleUploadedFile
+from django.core.files.uploadedfile import SimpleUploadedFile
 from PIL import Image
 from rest_framework import status
 from rest_framework.reverse import reverse
 
-from core.models import User
 from tests.factories.user import UserFactory
 
 

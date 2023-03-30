@@ -1,16 +1,15 @@
 from django.db.models import QuerySet
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.parsers import MultiPartParser, JSONParser
-from rest_framework.response import Response
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
-from api.serializers.user import UserSerializer, UploadProfilePicSerializer
-from api.utils import limit, offset, email
-
+from api.serializers.user import UploadProfilePictureSerializer, UserSerializer
+from api.utils import email, limit, offset
 from core.models import User
 
 
@@ -32,7 +31,7 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
         if self.action == "list":
             return UserSerializer
         if self.action == "upload_profile_picture":
-            return UploadProfilePicSerializer
+            return UploadProfilePictureSerializer
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":

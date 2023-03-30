@@ -4,7 +4,6 @@ from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from stdimage import StdImageField
-from stdimage.validators import MaxSizeValidator, MinSizeValidator
 
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
@@ -47,7 +46,7 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
         blank=True,
         verbose_name="Фотография профиля",
         upload_to="user_profile_pictures",
-        variations={'thumbnail': {"width": 100, "height": 100}},
+        variations={"thumbnail": {"width": 100, "height": 100}},
     )
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
