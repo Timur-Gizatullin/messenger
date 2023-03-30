@@ -16,10 +16,8 @@ def test__forward_message__success_case(api_client):
     api_client.force_authenticate(users[0])
     response = api_client.post(
         reverse("message-forward"),
-        data={
-            "forward_to_id": chat_to_forward.pk,
-            "message_ids": [messages[0].pk, messages[1].pk, messages[2].pk]
-        }, format="json"
+        data={"forward_to_id": chat_to_forward.pk, "message_ids": [messages[0].pk, messages[1].pk, messages[2].pk]},
+        format="json",
     )
 
     assert response.status_code == status.HTTP_201_CREATED
@@ -71,7 +69,7 @@ def test__forward_message__when_user_is_not_a_member_of_any_chat(api_client):
         },
         format="json",
     )
-    a = response.json()
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["non_field_errors"][0] == expected_error_message
 

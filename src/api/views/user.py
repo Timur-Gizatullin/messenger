@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.serializers.user import UserSerializer
-from api.utils import default_limit, email, limit, offset
+from api.utils import email, limit, offset
 from core.models import User
 
 

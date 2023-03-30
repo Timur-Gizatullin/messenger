@@ -1,7 +1,5 @@
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.mixins import CreateModelMixin
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
@@ -23,6 +21,4 @@ class MessageViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         new_messages = serializer.save()
 
-        return Response(
-            MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED
-        )
+        return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)

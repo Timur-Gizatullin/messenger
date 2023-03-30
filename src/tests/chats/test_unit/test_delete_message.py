@@ -5,7 +5,6 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from core.models import Message
-from tests.factories.chat import ChatFactory
 from tests.factories.message import MessageFactory
 from tests.factories.user import UserFactory
 

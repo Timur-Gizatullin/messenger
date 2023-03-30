@@ -1,8 +1,4 @@
-from copy import copy
-
-from django.db.models import Q
 from rest_framework import serializers
-from rest_framework.generics import get_object_or_404
 
 from core.models import Chat, Message
 
@@ -26,8 +22,13 @@ class MessageForwardSerializer(serializers.ModelSerializer):
         messages = validated_data["messages"]
         new_messages = []
         for message in messages:
-            new_message = {"forwarded_by": validated_data["user"], "chat": validated_data["forward_to"],
-                           "author": message.author, "replied_to": message.replied_to, "text": message.text}
+            new_message = {
+                "forwarded_by": validated_data["user"],
+                "chat": validated_data["forward_to"],
+                "author": message.author,
+                "replied_to": message.replied_to,
+                "text": message.text,
+            }
             new_messages.append(Message.objects.create(**new_message))
 
         return new_messages
