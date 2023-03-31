@@ -44,7 +44,7 @@ entity ChatUser {
 __
 * chat_id: Number <<FK>>
 * user_id: Number <<FK>>
-* role: enum
+* role: RoleEnum
 }
 
 
