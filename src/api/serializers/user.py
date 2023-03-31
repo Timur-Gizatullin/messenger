@@ -10,8 +10,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class UploadProfilePictureSerializer(serializers.ModelSerializer):
-    profile_picture = serializers.ImageField(required=True)
-
     class Meta:
         model = User
         fields = [
@@ -19,7 +17,7 @@ class UploadProfilePictureSerializer(serializers.ModelSerializer):
             "email",
             "profile_picture",
         ]
-        extra_kwargs = {"email": {"read_only": True}}
+        extra_kwargs = {"email": {"read_only": True}, "profile_picture": {"required": True}}
 
     def create(self, validated_data):
         user = self.context["request"].user
