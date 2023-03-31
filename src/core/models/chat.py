@@ -1,18 +1,17 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
 
 class ChatManager(models.Manager):
-    def validate_before_create(self, user_id: int, chat_id: int) -> str | None:
+    def validate_before_create_message(self, user_id: int, chat_id: int) -> None:
         queryset = Chat.objects.filter(pk=chat_id)
 
         if not queryset.filter(users__id=user_id):
-            return "User is not a member of the current chat"
+            ValidationError("User is not a member of the current chat")
         if queryset.filter(is_dialog=True).filter(users__is_deleted=True):
-            return "User is deleted"
-
-        return None
+            ValidationError("User is deleted")
 
 
 class Chat(CreatedAtUpdatedAtMixin):

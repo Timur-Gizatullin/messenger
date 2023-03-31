@@ -1,5 +1,4 @@
 from rest_framework import status
-from rest_framework.mixins import CreateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -10,7 +9,7 @@ from core.models import Message
 from core.utils.enums import Action
 
 
-class MessageViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, GenericViewSet):
+class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Message.objects.all()
 
@@ -23,7 +22,9 @@ class MessageViewSet(ChatWebSocketDistributorMixin, CreateModelMixin, GenericVie
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        self.distribute_to_ws_consumers(dict(serializer.data), Action.CREATE)
+        self.distribute_to_ws_consumers(
+            data=dict(serializer.data), action=Action.CREATE, postfix=[str(message.chat.pk)]
+        )
 
         return Response(
             MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED

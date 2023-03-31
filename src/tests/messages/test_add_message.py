@@ -11,10 +11,10 @@ from tests.factories.user import UserFactory
 def test__add_message__when_text_filled(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
-    payload = {"text": "any message", "chat_id": 91}
+    payload = {"text": "any message", "chat": chat.pk}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["text"] == payload["text"]
@@ -26,10 +26,10 @@ def test__add_message__when_text_filled(api_client):
 def test__add_message__when_text_is_empty(api_client):
     user = UserFactory()
     ChatFactory(users=[user])
-    payload = {"text": " ", "chat_id": 91}
+    payload = {"text": " ", "chat": 91}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -39,10 +39,10 @@ def test__add_message__when_text_and_replied_to_filled(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
     message = MessageFactory(author=UserFactory(), chat=chat)
-    payload = {"replied_to": message.pk, "text": "any message", "chat_id": 91}
+    payload = {"replied_to_id": message.pk, "text": "any message", "chat": chat.pk}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_201_CREATED
     assert response.data["text"] == payload["text"]
@@ -55,10 +55,10 @@ def test__add_message__when_text_and_replied_to_filled(api_client):
 def test__add_message__when_author_is_not_chat_member(api_client):
     user = UserFactory()
     ChatFactory()
-    payload = {"text": "any message", "chat_id": 91}
+    payload = {"text": "any message", "chat": 91}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -67,10 +67,10 @@ def test__add_message__when_author_is_not_chat_member(api_client):
 def test__add_message__when_text_not_filled(api_client):
     user = UserFactory()
     ChatFactory(users=[user])
-    payload = {"chat_id": 91}
+    payload = {"chat": 91}
 
     api_client.force_authenticate(user=user)
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
@@ -78,8 +78,8 @@ def test__add_message__when_text_not_filled(api_client):
 @pytest.mark.django_db
 def test__add_message__when_not_auth(api_client):
     ChatFactory()
-    payload = {"text": "any message", "chat_id": 91}
+    payload = {"text": "any message", "chat": 91}
 
-    response = api_client.post(reverse("message-create"), data=payload)
+    response = api_client.post(reverse("message-list"), data=payload)
 
     assert response.status_code == status.HTTP_401_UNAUTHORIZED

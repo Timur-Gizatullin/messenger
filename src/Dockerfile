@@ -19,7 +19,7 @@ RUN if [ $DEV_DEPS = True ] ; then \
   poetry install --no-interaction --no-ansi ; else \
   poetry install --no-dev --no-interaction --no-ansi ; fi
 
-COPY . .
+COPY .. .
 
 RUN chmod 777 /usr/src/app/entrypoint.sh
 ENTRYPOINT ["/usr/src/app/entrypoint.sh"]

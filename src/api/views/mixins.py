@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from typing import List
 
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
@@ -11,10 +12,10 @@ from core.utils.key_schemas import BaseKeySchema
 class WebSocketDistributorMixin:
     key_schema: BaseKeySchema
 
-    def distribute_to_ws_consumers(self, data, action: Action):
+    def distribute_to_ws_consumers(self, data: dict, action: Action, postfix: List[str]) -> None:
         channel_layer = get_channel_layer()
 
-        group_name = self.key_schema.get_key(postfix=data["chat"])
+        group_name = self.key_schema.get_key(postfix=postfix)
 
         content = WSContent(type=action, data=data)
         message = WSMessage(type="chat.message", content=content)
