@@ -4,7 +4,7 @@ from core.models import Chat, Message
 
 
 class MessageForwardSerializer(serializers.ModelSerializer):
-    forward_to_id = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all(), write_only=True)
+    forward_to_chat_id = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all(), write_only=True)
     message_ids = serializers.ListSerializer(child=serializers.PrimaryKeyRelatedField(queryset=Message.objects.all()))
 
     class Meta:
@@ -18,13 +18,25 @@ class MessageForwardSerializer(serializers.ModelSerializer):
             "forwarded_by": {"read_only": True},
         }
 
+    def validate(self, attrs):
+        user = self.context["request"].user
+
+        if not attrs["forward_to_chat_id"].users.contains(user):
+            raise serializers.ValidationError("User is not a member of the chat to forward")
+        for message in attrs["message_ids"]:
+            if not Chat.objects.all().filter(pk=message.chat.pk).filter(users=user):
+                raise serializers.ValidationError("User is not a member of the current chat")
+
+        attrs["forwarded_by"] = user
+
+        return attrs
+
     def create(self, validated_data):
-        messages = validated_data["messages"]
         new_messages = []
-        for message in messages:
+        for message in validated_data["message_ids"]:
             new_message = {
-                "forwarded_by": validated_data["user"],
-                "chat": validated_data["forward_to"],
+                "forwarded_by": validated_data["forwarded_by"],
+                "chat": validated_data["forward_to_chat_id"],
                 "author": message.author,
                 "replied_to": message.replied_to,
                 "text": message.text,
@@ -32,22 +44,6 @@ class MessageForwardSerializer(serializers.ModelSerializer):
             new_messages.append(Message.objects.create(**new_message))
 
         return new_messages
-
-    def validate(self, attrs):
-        user = self.context["request"].user
-        messages = attrs.pop("message_ids")
-        forward_to = attrs.pop("forward_to_id")
-        if not forward_to.users.contains(user):
-            raise serializers.ValidationError("User is not a member of the chat to forward")
-        for message in messages:
-            if not Chat.objects.all().filter(pk=message.chat.pk).filter(users=user):
-                raise serializers.ValidationError("User is not a member of the current chat")
-
-        attrs["messages"] = messages
-        attrs["user"] = user
-        attrs["forward_to"] = forward_to
-
-        return attrs
 
 
 class MessageSerializer(serializers.ModelSerializer):

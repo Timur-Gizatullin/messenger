@@ -8,6 +8,17 @@ from core.models import Chat, User
 class AuthSignUpSerializer(serializers.ModelSerializer):
     password_repeat = serializers.CharField()
 
+    class Meta:
+        model = User
+        fields = ["pk", "email", "password", "password_repeat"]
+
+    def validate(self, attrs):
+        password_repeat = attrs.pop("password_repeat")
+        if attrs["password"] != password_repeat:
+            raise serializers.ValidationError("Passwords are not similar")
+
+        return attrs
+
     def create(self, data):
         user = User.objects.create_user(email=data["email"])
         user.set_password(data["password"])
@@ -20,17 +31,6 @@ class AuthSignUpSerializer(serializers.ModelSerializer):
         self_chat.save()
 
         return user
-
-    def validate(self, attrs):
-        password_repeat = attrs.pop("password_repeat")
-        if attrs["password"] != password_repeat:
-            raise serializers.ValidationError("Passwords are not similar")
-
-        return attrs
-
-    class Meta:
-        model = User
-        fields = ["pk", "email", "password", "password_repeat"]
 
 
 class AuthUserOutputSerializer(serializers.ModelSerializer):
@@ -51,9 +51,6 @@ class AuthSignInSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField()
 
-    def create(self, validated_data):
-        return validated_data["user"]
-
     def validate(self, attrs):
         email = attrs.pop("email")
         password = attrs.pop("password")
@@ -66,3 +63,6 @@ class AuthSignInSerializer(serializers.Serializer):
         attrs["user"] = user
 
         return attrs
+
+    def create(self, validated_data):
+        return validated_data["user"]
