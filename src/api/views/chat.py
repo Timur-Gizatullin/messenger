@@ -5,14 +5,17 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from api.serializers.attachmet import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
 from core.models import Chat, Message
+from core.models.attachment import Attachment
 
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -22,6 +25,8 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     def get_queryset(self):
         if self.action in ("get_messages", "delete_message"):
             return Message.objects.all()
+        if self.action == "add_attachment":
+            return Attachment.objects.all()
 
         return Chat.objects.all()
 
@@ -51,6 +56,14 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
+        if self.action == "add_attachment":
+            return AttachmentSerializer
+
+    def get_parsers(self):
+        if self.action_map["post"] and self.action_map["post"] == "add_attachment":
+            return [MultiPartParser(), ]
+
+        return [JSONParser(), ]
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -74,3 +87,14 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["POST"])
+    def add_attachment(self, request, *args, **kwargs):
+        context = {"request": request, "pk": kwargs["pk"]}
+
+        serializer = self.get_serializer(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
