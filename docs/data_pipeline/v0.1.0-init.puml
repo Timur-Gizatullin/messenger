@@ -188,7 +188,7 @@ Backend --> Frontend: HTTP: 200
 
 
 == add attachment ==
-Frontend -> Backend: HTTP POST: /api/attachments (auth_token+ attachment)
+Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token+ attachment)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -197,7 +197,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get chat by attachment.chat_id
+Backend -> Postgres: PSQL: Get chat by id
 
 alt chat not found
 Postgres --x Backend: PSQL: Not Found
