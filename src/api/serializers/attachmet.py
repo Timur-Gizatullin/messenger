@@ -9,10 +9,12 @@ class AttachmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Attachment
         fields = ["created_at", "updated_at", "chat", "user", "file"]
-        extra_kwargs = {"created_at": {"read_only": True},
-                        "updated_at": {"read_only": True},
-                        "user": {"read_only": True},
-                        "chat": {"read_only": True}}
+        extra_kwargs = {
+            "created_at": {"read_only": True},
+            "updated_at": {"read_only": True},
+            "user": {"read_only": True},
+            "chat": {"read_only": True},
+        }
 
     def validate(self, attrs):
         chat = get_object_or_404(Chat, pk=self.context["pk"])

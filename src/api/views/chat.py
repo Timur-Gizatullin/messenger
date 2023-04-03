@@ -60,10 +60,14 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return AttachmentSerializer
 
     def get_parsers(self):
-        if self.action_map["post"] and self.action_map["post"] == "add_attachment":
-            return [MultiPartParser(), ]
+        if self.action_map.get("post", None) and self.action_map["post"] == "add_attachment":
+            return [
+                MultiPartParser(),
+            ]
 
-        return [JSONParser(), ]
+        return [
+            JSONParser(),
+        ]
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -97,4 +101,3 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
