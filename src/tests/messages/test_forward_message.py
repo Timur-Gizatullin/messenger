@@ -23,7 +23,7 @@ def test__forward_message__success_case(api_client):
         },
         format="json",
     )
-    a = response.json()
+
     assert response.status_code == status.HTTP_201_CREATED
     assert len(response.data) == 3
     for message in response.data:
@@ -60,12 +60,10 @@ def test__forward_message__when_message_ids_missed(api_client):
     api_client.force_authenticate(users[0])
     response = api_client.post(
         reverse("message-forward"),
-        data={
-            "forward_to_chat_id": chat_to_forward.pk
-        },
+        data={"forward_to_chat_id": chat_to_forward.pk},
         format="json",
     )
-    a = response.json()
+
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["message_ids"][0] == "This field is required."
 
