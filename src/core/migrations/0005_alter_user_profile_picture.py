@@ -19,11 +19,7 @@ class Migration(migrations.Migration):
                 force_min_size=False,
                 null=True,
                 upload_to="user_profile_pictures",
-                validators=[
-                    stdimage.validators.MinSizeValidator(200, 100),
-                    stdimage.validators.MaxSizeValidator(1028, 768),
-                ],
-                variations={"thumbnail": {"crop": True, "height": 100, "width": 100}},
+                variations={"thumbnail": {"height": 100, "width": 100}},
                 verbose_name="Фотография профиля",
             ),
         ),

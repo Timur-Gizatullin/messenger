@@ -12,11 +12,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UploadProfilePictureSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = [
-            "pk",
-            "email",
-            "profile_picture",
-        ]
+        fields = ["pk", "email", "profile_picture", "thumbnail_profile_picture"]
         extra_kwargs = {"email": {"read_only": True}, "profile_picture": {"required": True}}
 
     def create(self, validated_data):
