@@ -10,7 +10,7 @@ def api_client() -> APIClient:
     return APIClient()
 
 
-def image_data(size: tuple) -> BytesIO:
+def get_image_data(size: tuple) -> BytesIO:
     image_data = BytesIO()
     image_data.name = "test.png"
     image = Image.new("RGB", size)
