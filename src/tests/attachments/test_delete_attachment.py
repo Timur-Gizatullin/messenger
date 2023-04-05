@@ -4,7 +4,6 @@ from rest_framework.reverse import reverse
 
 from core.models.attachment import Attachment
 from tests.factories.attachment import AttachmentFactory
-from tests.factories.chat import ChatFactory
 from tests.factories.user import UserFactory
 
 

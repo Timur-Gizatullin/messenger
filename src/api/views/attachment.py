@@ -1,4 +1,4 @@
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -18,7 +18,9 @@ class AttachmentViewSet(GenericViewSet):
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "delete_attachment":
-            return super().filter_queryset(queryset).filter(Q(chat__users=self.request.user) & Q(user=self.request.user))
+            return (
+                super().filter_queryset(queryset).filter(Q(chat__users=self.request.user) & Q(user=self.request.user))
+            )
 
         return super().filter_queryset(queryset)
 
@@ -33,4 +35,3 @@ class AttachmentViewSet(GenericViewSet):
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
