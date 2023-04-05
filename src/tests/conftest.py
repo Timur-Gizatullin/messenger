@@ -10,7 +10,6 @@ def api_client() -> APIClient:
     return APIClient()
 
 
-@pytest.fixture
 def image_data(size: tuple) -> BytesIO:
     image_data = BytesIO()
     image_data.name = "test.png"

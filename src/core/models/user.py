@@ -57,10 +57,3 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
 
     def __str__(self):
         return self.email
-
-    @property
-    def thumbnail_profile_picture(self) -> str | None:
-        try:
-            return self.profile_picture.thumbnail.url
-        except AttributeError:
-            return None
