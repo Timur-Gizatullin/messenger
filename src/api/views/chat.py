@@ -9,10 +9,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
 from core.models import Chat, Message
+from core.models.attachment import Attachment
 
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -22,13 +24,15 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     def get_queryset(self):
         if self.action in ("get_messages", "delete_message"):
             return Message.objects.all()
+        if self.action == "get_attachments":
+            return Attachment.objects.all()
 
         return Chat.objects.all()
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":
             return super().filter_queryset(queryset).filter(users=self.request.user)
-        if self.action == "get_messages":
+        if self.action in ("get_messages", "get_attachments"):
             return (
                 super().filter_queryset(queryset).filter(chat__users=self.request.user).filter(chat=self.kwargs["pk"])
             )
@@ -51,6 +55,8 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
+        if self.action == "get_attachments":
+            return AttachmentSerializer
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -74,3 +80,17 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @swagger_auto_schema(manual_parameters=[limit, offset])
+    @action(detail=True, methods=["GET"])
+    def get_attachments(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        paginator = LimitOffsetPagination()
+        page = paginator.paginate_queryset(queryset, request, view=self)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
