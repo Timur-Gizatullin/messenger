@@ -230,12 +230,6 @@ end alt
 
 Postgres --> Backend: PSQL: attachment
 Backend -> Postgres: PSQL: Get chat by attachment.chat.id
-
-alt chat not found
-Postgres --x Backend: PSQL: Not Found
-Backend --x Frontend: HTTP: 404
-end alt
-
 Postgres --> Backend: PSQL: chat
 Backend -> Backend: chat.users contains user
 
