@@ -25,16 +25,14 @@ class MessageForwardSerializer(serializers.ModelSerializer):
 
         if len(attrs["message_ids"]) == 0:
             raise serializers.ValidationError("message_ids field is required")
-
-        current_chat_id = Chat.objects.get(messages=attrs["message_ids"][0]).pk
-        Chat.objects.validate_before_create_message(user_id=user.pk, chat_id=current_chat_id)
-
-        if not Chat.objects.filter(pk=attrs["forward_to_chat_id"].pk).filter(users__id=user.pk):
-            raise serializers.ValidationError("User is not a member of the chat to forward")
         if not Message.objects.filter(pk__in=[message.pk for message in attrs["message_ids"]]).filter(
             chat__pk=attrs["message_ids"][0].chat.pk
         ):
             raise serializers.ValidationError("Impossible to forward messages from different chats in one run")
+
+        current_chat_id = Chat.objects.get(messages=attrs["message_ids"][0]).pk
+        Chat.objects.validate_before_create_message(user_id=user.pk, chat_id=current_chat_id)
+        Chat.objects.validate_before_create_message(user_id=user.pk, chat_id=attrs["forward_to_chat_id"].pk)
 
         attrs["forwarded_by"] = user
 
