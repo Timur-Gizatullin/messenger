@@ -28,10 +28,11 @@ class AttachmentViewSet(GenericViewSet):
     def delete_attachment(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
+        instance = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
+
         if queryset.count() == 0:
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        instance = get_object_or_404(queryset, pk=kwargs["pk"])
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)

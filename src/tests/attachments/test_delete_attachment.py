@@ -51,6 +51,16 @@ def test__delete_attachment__when_user_is_not_attachment_owner_and_not_chat_memb
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
 
+@pytest.mark.django_db
+def test__delete_attachment__when_its_not_exist(api_client):
+    user = UserFactory()
+    not_existing_attachment_pk = 42
+
+    api_client.force_authenticate(user=user)
+    response = api_client.delete(reverse("attachment-delete-attachment", [not_existing_attachment_pk]))
+
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+
 
 @pytest.mark.django_db
 def test__delete_attachment__when_not_auth(api_client):
