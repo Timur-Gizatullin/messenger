@@ -19,8 +19,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         chat = get_object_or_404(Chat, pk=self.context["pk"])
 
-        if not Chat.objects.filter(pk=self.context["pk"]).filter(users=self.context["request"].user):
-            raise serializers.ValidationError("User is not a member of the chat")
+        Chat.objects.validate_before_create_message(user_id=self.context["request"].user.pk, chat_id=chat.pk)
 
         attrs["user"] = self.context["request"].user
         attrs["chat"] = chat

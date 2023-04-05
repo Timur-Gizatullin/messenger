@@ -61,13 +61,9 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
     def get_parsers(self):
         if self.action_map.get("post", None) and self.action_map["post"] == "add_attachment":
-            return [
-                MultiPartParser(),
-            ]
+            return [MultiPartParser(), ]
 
-        return [
-            JSONParser(),
-        ]
+        return [JSONParser(), ]
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
