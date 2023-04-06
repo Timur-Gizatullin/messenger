@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from api.serializers.message import MessageSerializer
 from core.models import Chat, Message, User
 
 
@@ -16,10 +17,16 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
+        depth = 1
         fields = ["pk", "users", "last_message", "is_dialog"]
+        extra_kwargs = {"users": {"many": True}}
 
     def get_last_message(self, chat: Chat) -> Message:
-        return Message.objects.filter(chat=chat.pk).reverse().first()
+        message = Message.objects.filter(chat=chat.pk).reverse().first()
+        if message:
+            message = MessageSerializer(message)
+            return message.data
+        return message
 
 
 class ChatCreateSerializer(ChatSerializer):
