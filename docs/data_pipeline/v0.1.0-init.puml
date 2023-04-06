@@ -8,7 +8,7 @@ participant Redis
 == WS connection ==
 Frontend -> Backend: WS: api/ws/{existing_url}/
 Backend -> Backend: connect to consumer
-Backend -> Redis: add group with group_name = consumer.get_group_name
+Backend -> Redis: add group where group_name = consumer.get_group_name
 Backend --> Frontend: WS: ok
 
 == get chats with last message==
@@ -23,7 +23,7 @@ end alt
 Postgres --> Backend: PSQL: user
 Backend -> Postgres: PSQL: Get chats by user.id
 Postgres --> Backend: PSQL: chats (contains last_msg)
-Backend --> Frontend: HTTP: 200
+Backend --> Frontend: HTTP: chats
 
 
 == Create chat ==
@@ -36,7 +36,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get chats by user.id and user_id where chat.is_dialog is true
+Backend -> Postgres: PSQL: get chats by user.id and user_id where chat.is_dialog = true
 
 alt chat exists
 Postgres --> Backend: PSQL: chats
@@ -117,11 +117,8 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get messages by message_ids
+Backend -> Postgres: PSQL: Get messages_to_forward by message_ids
 Postgres --> Backend: PSQL: messages_to_forward
-loop for message in messages_to_forward
-Backend -> Backend: message.forward_by = user.id
-end loop
 Backend -> Postgres: PSQL: get chat by forward_to_id
 
 alt chat not found
@@ -130,11 +127,16 @@ Backend --> Frontend: HTTP: 400
 end alt
 
 Postgres --> Backend: PSQL: chat
+
+loop for message in messages_to_forward
+Backend -> Backend: message.forward_by = user.id
 Backend -> Backend: message.chat = chat
-Backend -> Postgres: PSQL: add new_message
-Postgres --> Backend: PSQL: message
-Backend -> Frontend: WS: CREATE: message
-Backend --> Frontend: HTTP: message
+end loop
+
+Backend -> Postgres: PSQL: add new_messages
+Postgres --> Backend: PSQL: new_messages
+Backend -> Frontend: WS: CREATE: new_messages
+Backend --> Frontend: HTTP: new_messages
 
 == Registration ==
 Frontend -> Backend: HTTP POST: /api/auth/sign_up/ (registration_model)
@@ -213,11 +215,12 @@ Backend --x Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: chat
-Backend -> Postgres: PSQL: save attachment.file to media storage
+Backend -> Backend: save attachment.file to media storage
+Backend -> Postgres: PSQL: add attachment
 Postgres --> Backend: PSQL: attachment
 
 Backend -> Frontend: WS: CREATE: attachment
-Backend --> Frontend: HTTP: 201
+Backend --> Frontend: HTTP: attachment
 
 == Delete attachment ==
 Frontend -> Backend: HTTP DELETE: /api/attachments/{id}
