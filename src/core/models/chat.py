@@ -9,9 +9,9 @@ class ChatManager(models.Manager):
         queryset = Chat.objects.filter(pk=chat_id)
 
         if not queryset.filter(users__id=user_id):
-            ValidationError("User is not a member of the current chat")
+            raise ValidationError("User is not a member of the current chat")
         if queryset.filter(is_dialog=True).filter(users__is_deleted=True):
-            ValidationError("one of users is deleted, dialog is not allowed")
+            raise ValidationError("one of users is deleted, dialog is not allowed")
 
 
 class Chat(CreatedAtUpdatedAtMixin):

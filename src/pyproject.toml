@@ -15,6 +15,7 @@ channels = "3.0.5"
 loguru = "^0.6.0"
 drf-yasg = "^1.21.5"
 channels-redis = "3.4.1"
+django-stdimage = "^6.0.1"
 
 
 [tool.poetry.group.dev.dependencies]

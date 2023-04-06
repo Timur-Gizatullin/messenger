@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("core", "0004_user_is_deleted_alter_chat_created_at_and_more"),
+        ("core", "0005_alter_user_profile_picture"),
     ]
 
     operations = [
