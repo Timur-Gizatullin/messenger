@@ -6,8 +6,9 @@ participant Redis
 
 
 == WS connection ==
-Frontend -> Backend: WS: api/ws/chat/{id}/connect
-Backend -> Backend: create group "chat/id"
+Frontend -> Backend: WS: api/ws/{existing_url}/
+Backend -> Backend: connect to consumer
+Backend -> Redis: add group with group_name = consumer.get_group_name
 Backend --> Frontend: WS: ok
 
 == get chats with last message==
@@ -35,7 +36,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get chats by user.id where chat.is_dialog is true and chats doesn't contains companion user
+Backend -> Postgres: PSQL: get chats by user.id and user_id where chat.is_dialog is true
 
 alt chat exists
 Postgres --> Backend: PSQL: chats
@@ -66,7 +67,7 @@ Postgres --> Backend: PSQL: messages
 Backend --> Frontend: messages
 
 
-== Add message to chat with real-time updating==
+== Add message to chat ==
 Frontend -> Backend: HTTP POST: /api/chat/{id}/ (text + reply_to) (auth_token)
 Backend -> Postgres: PSQL: Get user by auth_token
 
@@ -76,7 +77,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Backend: Check if text or pic not None
+Backend -> Backend: Check if text is blank or None
 
 alt text is None or blank
 Backend --x Frontend: HTTP: 400
@@ -84,14 +85,14 @@ end alt
 
 Backend -> Postgres: PSQL: get chat by id
 Postgres --> Backend: PSQL: chat
-Backend -> Postgres: PSQL: insert new message to chat
+Backend -> Postgres: PSQL: add message
 Postgres --> Backend: PSQL: message
-Backend -> Frontend: WS: "chat/id" group (new_message + messages)
-Backend --> Frontend: HTTP: 201
+Backend -> Frontend: WS: CREATE: message
+Backend --> Frontend: HTTP: message
 
 
 == Delete Message ==
-Frontend -> Backend: HTTP DELETE: /api/chats/{chat_id}messages/{id}/ (auth_token)
+Frontend -> Backend: HTTP DELETE: /api/chats/{chat_id}/messages/{id}/ (auth_token)
 Backend -> Postgres: PSQL: get user by auth_token
 
 alt token not found
@@ -102,7 +103,7 @@ end alt
 Postgres --> Backend: PSQL: user
 Backend -> Postgres: PSQL: Delete message by id
 Postgres --> Backend: PSQL: ok
-Backend -> Frontend: WS DELETE: "chat/chat_id" group (messages)
+Backend -> Frontend: WS DELETE: message
 Backend --> Frontend: HTTP: 204
 
 
@@ -116,17 +117,24 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get messages by id using id__in(message_ids)
+Backend -> Postgres: PSQL: Get messages by message_ids
 Postgres --> Backend: PSQL: messages_to_forward
 loop for message in messages_to_forward
-Backend -> Backend: message.forward_by = user.id and clean id or copy obj
+Backend -> Backend: message.forward_by = user.id
 end loop
-Backend -> Postgres: PSQL: get dialog by forward_to_id
-Postgres --> Backend: PSQL: dialog
-Backend -> Postgres: PSQL: Insert new_message
+Backend -> Postgres: PSQL: get chat by forward_to_id
+
+alt chat not found
+Postgres --> Backend: PSQL: None
+Backend --> Frontend: HTTP: 400
+end alt
+
+Postgres --> Backend: PSQL: chat
+Backend -> Backend: message.chat = chat
+Backend -> Postgres: PSQL: add new_message
 Postgres --> Backend: PSQL: message
-Backend -> Frontend: WS: "chat/forward_to_id" group (new_message + messages)
-Backend --> Frontend: HTTP: 201
+Backend -> Frontend: WS: CREATE: message
+Backend --> Frontend: HTTP: message
 
 == Registration ==
 Frontend -> Backend: HTTP POST: /api/auth/sign_up/ (registration_model)
@@ -138,7 +146,7 @@ Backend --x Frontend: HTTP: 400
 end alt
 
 Postgres --> Backend: PSQL: None
-Backend -> Postgres: PSQL: Insert new_user
+Backend -> Postgres: PSQL: add new_user
 Postgres --> Backend: PSQL: new_user
 Backend --> Frontend: HTTP: new_user
 
@@ -146,8 +154,8 @@ Backend --> Frontend: HTTP: new_user
 == login ==
 Frontend -> Backend: HTTP POST: /api/auth/login/ (login_model)
 Backend -> Postgres: PSQL: Get user by login_model.email
-Postgres --> Backend: PSQL: user_data_to_compare
-Backend -> Backend: Compare data from Frontend and Postgres
+Postgres --> Backend: PSQL: user_data
+Backend -> Backend: Compare login_model.email with user_data.email and login_model.password  with user_data.password
 
 alt data is not similar
 Backend --x Frontend: HTTP: 400
@@ -166,7 +174,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get users on limit + offset + email filter
+Backend -> Postgres: PSQL: Get users with limit + offset + email filter
 Postgres --> Backend: PSQL:users
 Backend --> Frontend: users
 
@@ -184,11 +192,11 @@ Postgres --> Backend: PSQL: user
 Backend -> Backend: save profile_picture to media storage
 Backend -> Postgres: PSQL: Update user.profile_picture = profile_picture
 Postgres --> Backend: PSQL OK
-Backend --> Frontend: HTTP: 200
+Backend --> Frontend: HTTP: user
 
 
 == add attachment ==
-Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token+ attachment)
+Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token + attachment)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -212,7 +220,7 @@ Backend -> Frontend: WS: CREATE: attachment
 Backend --> Frontend: HTTP: 201
 
 == Delete attachment ==
-Frontend -> Backend: HTTP DELETE: /api/attachments/{attachment_id}
+Frontend -> Backend: HTTP DELETE: /api/attachments/{id}
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -221,7 +229,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get attachment by attachment_id
+Backend -> Postgres: PSQL: Get attachment by id
 
 alt attachment not found
 Postgres --x Backend: PSQL: Not Found
@@ -239,7 +247,7 @@ end alt
 
 Backend -> Postgres: PSQL: Delete attachment
 Postgres --> Backend: PSQL: OK
-Backend -> Frontend: WS: DELETE: attachment deleted
+Backend -> Frontend: WS: DELETE: attachment
 Backend --> Frontend: HTTP: 204
 
 == Get attachments with pagination ==
@@ -260,9 +268,9 @@ Backend --x Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: chat
-Backend -> Postgres: PSQL: get attachments with limit offset
+Backend -> Postgres: PSQL: get attachments with limit offset filters
 Postgres --> Backend: PSQL:  attachments
-Backend --> Frontend: HTTP: 200
+Backend --> Frontend: HTTP: attachments
 
 == set user role in chat ==
 Frontend -> Backend: HTTP PATCH: /api/chats/{id}/users/{user_id} (auth_token + new_role)
@@ -274,7 +282,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get role by id user.id
+Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
@@ -282,7 +290,7 @@ alt role is not RoleEnum.owner or RoleEnum.admin
 Backend --x Frontend: HTTP: 403
 end alt
 
-Backend -> Postgres: PSQL: get role by id user_id
+Backend -> Postgres: PSQL: get role by user_id
 Postgres --> Backend: PSQL: role
 Backend -> Backend: check role
 
@@ -312,7 +320,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get role by id user.id
+Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
@@ -324,7 +332,7 @@ Backend -> Postgres: PSQL: Get chat by id
 
 alt chat not found
 Postgres --x Backend: PSQL: Not Found
-Backend --x Frontend: HTTP: 400
+Backend --x Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: chat
@@ -344,7 +352,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get role by id user.id
+Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
