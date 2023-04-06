@@ -1,12 +1,14 @@
 from django.db.models import QuerySet
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from api.serializers.user import UserSerializer
+from api.serializers.user import UploadProfilePictureSerializer, UserSerializer
 from api.utils import email, limit, offset
 from core.models import User
 
@@ -15,9 +17,17 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = User.objects.all()
 
+    def get_parsers(self):
+        if self.action_map.get("post", None) and self.action_map["post"] == "upload_profile_picture":
+            return [MultiPartParser(), ]
+
+        return [JSONParser(), ]
+
     def get_serializer_class(self):
         if self.action == "list":
             return UserSerializer
+        if self.action == "upload_profile_picture":
+            return UploadProfilePictureSerializer
 
     def filter_queryset(self, queryset: QuerySet) -> QuerySet:
         if self.action == "list":
@@ -40,3 +50,11 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["POST"])
+    def upload_profile_picture(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
