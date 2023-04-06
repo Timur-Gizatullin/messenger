@@ -36,6 +36,7 @@ def test__upload_profile_picture__success_case(size, api_client):
     assert user.profile_picture is not None
     assert response.data["pk"] == user.pk
     assert response.data["profile_picture"]
+    assert response.data["profile_picture"]["original"] == user.profile_picture.url
     assert response.data["profile_picture"]["thumbnail"] == user.profile_picture.thumbnail.url
 
 
