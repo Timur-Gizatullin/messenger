@@ -47,7 +47,7 @@ Postgres --> Backend: None
 Backend -> Postgres: PSQL: create new_chat
 Postgres --> Backend: PSQL: new_chat
 Backend -> Postgres: PSQL: get ChatUser by user.id and new_chat.id
-Postgres --> backend: PSQL: ChatUser
+Postgres --> Backend: PSQL: ChatUser
 Backend --> Postgres: Update ChatUser.role = RoleEnum.owner
 Backend --> Frontend: HTTP: new_chat
 
