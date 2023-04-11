@@ -7,13 +7,23 @@ updated_at: datetime <<generated>>
 *is_dialog: bool
 }
 
+entity AttachmentTypeEnum {
+* pk
+__
+*type: text
+}
+
 entity Attachment {
 * pk
 __
 *created_at: datetime <<generated>>
 updated_at: datetime <<generated>>
 chat_id: number <<FK>>
+reply_to_message: number <<FK>>
+reply_to_attachment: number <<FK>>
+forward_by: number <<FK>>
 file: filefield
+type: AttachmentTypeEnum
 }
 
 entity Message {
@@ -21,7 +31,8 @@ entity Message {
 __
 *author_id: number <<FK>>
 *chat_id: number <<FK>>
-reply_to: number <<FK>>
+reply_to_message: number <<FK>>
+reply_to_attachment: number <<FK>>
 text: text
 forward_by: number <<FK>>
 *sent_at: datetime <<generated>>
@@ -39,12 +50,18 @@ updated_at: datetime
 profile_picture: imagefield
 }
 
+entity ChatRoleEnum {
+* pk
+__
+*role: text
+}
+
 entity ChatUser {
 * pk
 __
 * chat_id: Number <<FK>>
 * user_id: Number <<FK>>
-* role: RoleEnum
+* role: ChatRoleEnum
 }
 
 
@@ -58,4 +75,10 @@ Message }|-- Chat
 Attachment }|-- Chat
 
 Message ||--|| Message
+Message ||--|| Attachment
+
+Attachment ||--|| Message
+Attachment ||--|| Attachment
+
+Attachment }|-- User
 @enduml

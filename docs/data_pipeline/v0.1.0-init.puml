@@ -48,7 +48,7 @@ Backend -> Postgres: PSQL: create new_chat
 Postgres --> Backend: PSQL: new_chat
 Backend -> Postgres: PSQL: get ChatUser by user.id and new_chat.id
 Postgres --> Backend: PSQL: ChatUser
-Backend --> Postgres: Update ChatUser.role = RoleEnum.owner
+Backend --> Postgres: Update ChatUser.role = ChatRoleEnum.owner
 Backend --> Frontend: HTTP: new_chat
 
 
@@ -68,7 +68,7 @@ Backend --> Frontend: messages
 
 
 == Add message to chat ==
-Frontend -> Backend: HTTP POST: /api/chat/{id}/ (text + reply_to) (auth_token)
+Frontend -> Backend: HTTP POST: /api/chat/{id}/ (text + reply_to_message_id + reply_to_attachment_id) (auth_token)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -83,6 +83,24 @@ alt text is None or blank
 Backend --x Frontend: HTTP: 400
 end alt
 
+Backend -> Postgres: PSQL: Get reply_to_message by reply_to_message_id
+
+alt reply_to_message not found
+Postgres --> Backend: Not found
+Backend --> Frontend: HTTP: 404
+end alt
+
+Postgres --> Backend: PSQL: reply_to_message
+Backend -> Postgres: PSQL: Get reply_to_attachment by reply_to_attachment_id
+
+alt attachment not found
+Postgres --> Backend: PSQL: Not found
+Backend --> Frontend: HTTP: 404
+end alt
+
+Postgres --> Backend: PSQL: reply_to_attachment
+Backend -> Backend: message.reply_to_message = reply_to_message
+Backend -> Backend: message.reply_to_attachment = reply_to_attachment
 Backend -> Postgres: PSQL: get chat by id
 Postgres --> Backend: PSQL: chat
 Backend -> Postgres: PSQL: add message
@@ -108,7 +126,7 @@ Backend --> Frontend: HTTP: 204
 
 
 == Forward message ==
-Frontend -> Backend: HTTP POST: /api/messages/forward/ (message_ids + forward_to_id + auth_token)
+Frontend -> Backend: HTTP POST: /api/messages/forward/ (message_ids + attachment_ids + forward_to_id + auth_token)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -119,6 +137,8 @@ end alt
 Postgres --> Backend: PSQL: user
 Backend -> Postgres: PSQL: Get messages_to_forward by message_ids
 Postgres --> Backend: PSQL: messages_to_forward
+Backend -> Postgres: PSQL: Get attachments_to_forward by attachment_ids
+Postgres --> Backend: PSQL: attachments_to_forward
 Backend -> Postgres: PSQL: get chat by forward_to_id
 
 alt chat not found
@@ -133,10 +153,17 @@ Backend -> Backend: message.forward_by = user.id
 Backend -> Backend: message.chat = chat
 end loop
 
+loop for attachment in attachments_to_forward
+Backend -> Backend: attachment.forward_by = user.id
+Backend -> Backend: attachment.chat = chat
+end loop
+
 Backend -> Postgres: PSQL: add new_messages
 Postgres --> Backend: PSQL: new_messages
-Backend -> Frontend: WS: CREATE: new_messages
-Backend --> Frontend: HTTP: new_messages
+Backend -> Postgres: PSQL: add new_attachments
+Postgres --> Backend: PSQL: new_attachments
+Backend -> Frontend: WS: CREATE: new_messages + new_attachments
+Backend --> Frontend: HTTP: new_messages + new_attachments
 
 == Registration ==
 Frontend -> Backend: HTTP POST: /api/auth/sign_up/ (registration_model)
@@ -198,7 +225,7 @@ Backend --> Frontend: HTTP: user
 
 
 == add attachment ==
-Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token + attachment)
+Frontend -> Backend: HTTP POST: /api/chats/{id}/attachments (auth_token + attachment + reply_to_message_id + reply_to_attachment_id)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -214,6 +241,24 @@ Postgres --x Backend: PSQL: Not Found
 Backend --x Frontend: HTTP: 404
 end alt
 
+Backend -> Postgres: PSQL: Get reply_to_message by reply_to_message_id
+
+alt reply_to_message not found
+Postgres --> Backend: Not found
+Backend --> Frontend: HTTP: 404
+end alt
+
+Postgres --> Backend: PSQL: reply_to_message
+Backend -> Postgres: PSQL: Get reply_to_attachment by reply_to_attachment_id
+
+alt attachment not found
+Postgres --> Backend: PSQL: Not found
+Backend --> Frontend: HTTP: 404
+end alt
+
+Postgres --> Backend: PSQL: reply_to_attachment
+Backend -> Backend: attachment.reply_to_attachment = reply_to_attachment
+Backend -> Backend: attachment.reply_to_message = reply_to_message
 Postgres --> Backend: PSQL: chat
 Backend -> Backend: save attachment.file to media storage
 Backend -> Postgres: PSQL: add attachment
@@ -289,7 +334,7 @@ Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
-alt role is not RoleEnum.owner or RoleEnum.admin
+alt role is not ChatRoleEnum.owner or RoleEnum.admin
 Backend --x Frontend: HTTP: 403
 end alt
 
@@ -297,7 +342,7 @@ Backend -> Postgres: PSQL: get role by user_id
 Postgres --> Backend: PSQL: role
 Backend -> Backend: check role
 
-alt role is RoleEnum.owner (owner role is immutable)
+alt role is ChatRoleEnum.owner (owner role is immutable)
 Backend --x Frontend: HTTP: 403
 end alt
 
@@ -327,7 +372,7 @@ Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
-alt role is not owner or admin
+alt role is not ChatRoleEnum.owner or ChatRoleEnum.admin
 Backend --x Frontend: HTTP: 403
 end alt
 
@@ -359,7 +404,7 @@ Backend -> Postgres: PSQL: get role by user.id
 Postgres --> Backend: PSQL: role
 
 Backend -> Backend: check role
-alt role is not RoleEnum.owner or RoleEnum.admin
+alt role is not ChatRoleEnum.owner or RoleEnum.admin
 Backend --x Frontend: HTTP: 403
 end alt
 
@@ -367,7 +412,7 @@ Backend -> Postgres: PSQL: get role by id user_id
 Postgres --> Backend: PSQL: role
 Backend -> Backend: check role
 
-alt role is RoleEnum.owner (owner role is immutable)
+alt role is ChatRoleEnum.owner (owner role is immutable)
 Backend --x Frontend: HTTP: 403
 end alt
 
