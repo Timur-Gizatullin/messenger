@@ -20,7 +20,6 @@ from core.models.attachment import Attachment
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
-    queryset = Chat.objects.all()
 
     def get_queryset(self):
         if self.action in ("get_messages", "delete_message"):

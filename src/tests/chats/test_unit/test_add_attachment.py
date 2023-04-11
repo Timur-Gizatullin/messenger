@@ -5,12 +5,13 @@ from rest_framework import status
 from rest_framework.reverse import reverse
 
 from core.utils.enums import AttachmentTypeEnum
+from tests.conftest import get_image_data
 from tests.factories.chat import ChatFactory
 from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db
-def test__add_attachment__when_any_file(api_client):
+def test__add_attachment__when_not_picture(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
     data = BytesIO(b"test_file")
@@ -37,13 +38,10 @@ def test__add_attachment__when_any_file(api_client):
 
 
 @pytest.mark.django_db
-def test__add_attachment__when_any_file(api_client):
+def test__add_attachment__when_picture(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
-    data = BytesIO(b"test_file")
-    data.name = "file.txt"
-    data.seek(0)
-    payload = {"file": data}
+    payload = {"file": get_image_data((100, 200))}
 
     api_client.force_authenticate(user=user)
     response = api_client.post(

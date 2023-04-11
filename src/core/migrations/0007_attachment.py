@@ -8,7 +8,7 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("core", "0004_user_is_deleted_alter_chat_created_at_and_more"),
+        ("core", "0006_remove_message_picture"),
     ]
 
     operations = [
