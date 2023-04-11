@@ -4,12 +4,13 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
+from core.utils.enums import AttachmentTypeEnum
 from tests.factories.chat import ChatFactory
 from tests.factories.user import UserFactory
 
 
 @pytest.mark.django_db
-def test__add_attachment__success_case(api_client):
+def test__add_attachment__when_any_file(api_client):
     user = UserFactory()
     chat = ChatFactory(users=[user])
     data = BytesIO(b"test_file")
@@ -32,6 +33,34 @@ def test__add_attachment__success_case(api_client):
     assert response.data["chat"] == chat.pk
     assert response.data["user"] == user.pk
     assert response.data["file"]
+    assert response.data["type"] == AttachmentTypeEnum.FILE
+
+
+@pytest.mark.django_db
+def test__add_attachment__when_any_file(api_client):
+    user = UserFactory()
+    chat = ChatFactory(users=[user])
+    data = BytesIO(b"test_file")
+    data.name = "file.txt"
+    data.seek(0)
+    payload = {"file": data}
+
+    api_client.force_authenticate(user=user)
+    response = api_client.post(
+        reverse(
+            "chat-add-attachment",
+            [
+                chat.pk,
+            ],
+        ),
+        data=payload,
+    )
+
+    assert response.status_code == status.HTTP_201_CREATED
+    assert response.data["chat"] == chat.pk
+    assert response.data["user"] == user.pk
+    assert response.data["file"]
+    assert response.data["type"] == AttachmentTypeEnum.PICTURE
 
 
 @pytest.mark.django_db
