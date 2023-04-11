@@ -6,6 +6,7 @@ class Action(str, Enum):
     CREATE = "CREATE"
     UPDATE = "UPDATE"
 
+
 class AttachmentTypeEnum(str, Enum):
     PICTURE = "PICTURE"
     FILE = "FILE"
