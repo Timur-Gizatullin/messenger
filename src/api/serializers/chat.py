@@ -1,3 +1,5 @@
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
 from api.serializers.message import MessageSerializer
@@ -66,3 +68,36 @@ class ChatCreateSerializer(ChatSerializer):
         user_chat.save()
 
         return chat
+
+
+class UserChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChat
+        fields = ["user", "chat", "role"]
+        extra_kwargs = {"user": {"read_only": True}, "chat": {"read_only": True}}
+
+    def validate(self, attrs):
+        user_chat_to_update = get_object_or_404(
+            UserChat, Q(chat__id=self.context["pk"]) & Q(user=self.context["user_id"])
+        )
+        current_user_chat = get_object_or_404(
+            UserChat, Q(chat__id=self.context["pk"]) & Q(user=self.context["request"].user)
+        )
+
+        if not (current_user_chat.role == ChatRoleEnum.OWNER or current_user_chat.role == ChatRoleEnum.ADMIN):
+            raise serializers.ValidationError(f"{current_user_chat.role} role doesnt allow update user roles")
+        if user_chat_to_update.role == ChatRoleEnum.OWNER:
+            raise serializers.ValidationError("Impossible to update owner role")
+        if attrs["role"] == ChatRoleEnum.OWNER:
+            raise serializers.ValidationError("OWNER is not allowed as choice")
+
+        attrs["user_chat_to_update"] = user_chat_to_update
+
+        return attrs
+
+    def create(self, validated_data):
+        user_chat_to_update = validated_data["user_chat_to_update"]
+        user_chat_to_update.role = validated_data["role"]
+        user_chat_to_update.save()
+
+        return user_chat_to_update
