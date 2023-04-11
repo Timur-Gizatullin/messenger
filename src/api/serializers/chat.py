@@ -2,6 +2,8 @@ from rest_framework import serializers
 
 from api.serializers.message import MessageSerializer
 from core.models import Chat, Message, User
+from core.models.user_chat import UserChat
+from core.utils.enums import ChatRoleEnum
 
 
 class ChatUserSerializer(serializers.ModelSerializer):
@@ -59,5 +61,8 @@ class ChatCreateSerializer(ChatSerializer):
         users_queryset = User.objects.all().filter(pk__in=validated_users)
         chat.users.set(users_queryset)
         chat.save()
+        user_chat = UserChat.objects.filter(user=self.context["request"].user).filter(chat=chat).get()
+        user_chat.role = ChatRoleEnum.OWNER
+        user_chat.save()
 
         return chat
