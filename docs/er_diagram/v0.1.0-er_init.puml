@@ -8,14 +8,15 @@ updated_at: datetime <<generated>>
 }
 
 entity AttachmentTypeEnum {
-* pk
-__
-*type: text
+CREATE: "CREATE"
+DELETE: "DELETE"
+UPDATE: "UPDATE"
 }
 
 entity Attachment {
 * pk
 __
+author: number <<FK>>
 *created_at: datetime <<generated>>
 updated_at: datetime <<generated>>
 chat_id: number <<FK>>
@@ -51,9 +52,9 @@ profile_picture: imagefield
 }
 
 entity ChatRoleEnum {
-* pk
-__
-*role: text
+OWNER: "OWNER"
+ADMIN: "ADMIN"
+MEMBER: "MEMBER"
 }
 
 entity ChatUser {
