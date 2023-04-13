@@ -57,17 +57,17 @@ ADMIN: "ADMIN"
 MEMBER: "MEMBER"
 }
 
-entity ChatUser {
+entity UserChat {
 * pk
 __
 * chat_id: Number <<FK>>
 * user_id: Number <<FK>>
-* role: ChatRoleEnum
+* role: ChatRoleEnum <<default: MEMBER>>
 }
 
 
-ChatUser }|-- User
-ChatUser }|-- Chat
+UserChat }|-- User
+UserChat }|-- Chat
 
 
 Message }|-- User

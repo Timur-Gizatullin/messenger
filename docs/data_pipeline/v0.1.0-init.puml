@@ -7,8 +7,8 @@ participant Redis
 
 == WS connection ==
 Frontend -> Backend: WS: api/ws/{existing_url}/
-Backend -> Redis: add group where group_name = consumer.get_group_name
-Redis -> Backend: OK
+Backend -> Redis: RESP: add group where group_name = consumer.get_group_name
+Redis --> Backend: RESP: OK
 Backend --> Frontend: WS: OK
 
 == get chats with last message==
@@ -36,7 +36,7 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: get chats by user.id and user_id where chat.is_dialog = true
+Backend -> Postgres: PSQL: get chats by user.id and user_ids where chat.is_dialog = true
 
 alt chat exists
 Postgres --> Backend: PSQL: chats
@@ -84,6 +84,7 @@ alt text is None or blank
 Backend --x Frontend: HTTP: 400
 end alt
 
+alt reply_to_message_id is not None
 Backend -> Postgres: PSQL: Get reply_to_message by reply_to_message_id
 
 alt reply_to_message not found
@@ -92,6 +93,10 @@ Backend --> Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: reply_to_message
+Backend -> Backend: message.reply_to_message = reply_to_message
+end alt
+
+alt reply_to_attachment_id is not None
 Backend -> Postgres: PSQL: Get reply_to_attachment by reply_to_attachment_id
 
 alt attachment not found
@@ -100,8 +105,9 @@ Backend --> Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: reply_to_attachment
-Backend -> Backend: message.reply_to_message = reply_to_message
 Backend -> Backend: message.reply_to_attachment = reply_to_attachment
+end alt
+
 Backend -> Postgres: PSQL: get chat by chat_id
 Postgres --> Backend: PSQL: chat
 Backend -> Postgres: PSQL: add message
@@ -111,7 +117,7 @@ Backend --> Frontend: HTTP: message
 
 
 == Delete Message ==
-Frontend -> Backend: HTTP DELETE: /api/chats/messages/{id}/ (auth_token)
+Frontend -> Backend: HTTP DELETE: /api/messages/{id}/ (auth_token)
 Backend -> Postgres: PSQL: get user by auth_token
 
 alt token not found
@@ -133,7 +139,7 @@ Backend -> Postgres: PSQL: get user_chat by user.pk message.chat.pk
 
 alt user is not a member of the message.chat
 Postgres --x Backend: PSQL: Not found
-Backend --x Frontend: HTTP: 400
+Backend --x Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: user_chat
@@ -159,28 +165,40 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-Backend -> Postgres: PSQL: Get messages_to_forward by message_ids
-Postgres --> Backend: PSQL: messages_to_forward
-Backend -> Postgres: PSQL: Get attachments_to_forward by attachment_ids
-Postgres --> Backend: PSQL: attachments_to_forward
+
+Backend -> Backend: check attachment_ids and message_ids is not None
+alt attachment_ids and message_ids is None
+Backend --> Frontend: HTTP: 400
+end alt
+
 Backend -> Postgres: PSQL: get chat by forward_to_id
 
 alt chat not found
 Postgres --> Backend: PSQL: None
-Backend --> Frontend: HTTP: 400
+Backend --> Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: chat
+
+alt message_ids is not None
+Backend -> Postgres: PSQL: Get messages_to_forward by message_ids
+Postgres --> Backend: PSQL: messages_to_forward
 
 loop for message in messages_to_forward
 Backend -> Backend: message.forward_by = user.id
 Backend -> Backend: message.chat = chat
 end loop
+end alt
+
+alt attachment_ids is not None
+Backend -> Postgres: PSQL: Get attachments_to_forward by attachment_ids
+Postgres --> Backend: PSQL: attachments_to_forward
 
 loop for attachment in attachments_to_forward
 Backend -> Backend: attachment.forward_by = user.id
 Backend -> Backend: attachment.chat = chat
 end loop
+end alt
 
 Backend -> Postgres: PSQL: add new_messages
 Postgres --> Backend: PSQL: new_messages
@@ -207,8 +225,14 @@ Backend --> Frontend: HTTP: new_user
 == login ==
 Frontend -> Backend: HTTP POST: /api/auth/login/ (email+password)
 Backend -> Postgres: PSQL: Get user by email
+
+alt user not found
+Postgres --x Backend: PSQL: Not found
+Backend --x Frontend: HTTP: 404
+end alt
+
 Postgres --> Backend: PSQL: user_data
-Backend -> Backend: Compare email with user_data.email and password  with user_data.password
+Backend -> Backend: Compare password  with user_data.password
 
 alt data is not similar
 Backend --x Frontend: HTTP: 400
@@ -266,6 +290,8 @@ Backend --x Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: chat
+
+alt reply_to_message is not None
 Backend -> Postgres: PSQL: Get reply_to_message by reply_to_message_id
 
 alt reply_to_message not found
@@ -274,6 +300,10 @@ Backend --> Frontend: HTTP: 404
 end alt
 
 Postgres --> Backend: PSQL: reply_to_message
+Backend -> Backend: attachment.reply_to_message = reply_to_message
+end alt
+
+alt reply_to_attachment is not None
 Backend -> Postgres: PSQL: Get reply_to_attachment by reply_to_attachment_id
 
 alt attachment not found
@@ -283,7 +313,9 @@ end alt
 
 Postgres --> Backend: PSQL: reply_to_attachment
 Backend -> Backend: attachment.reply_to_attachment = reply_to_attachment
-Backend -> Backend: attachment.reply_to_message = reply_to_message
+end alt
+
+Backend -> Backend: attachment.author = user
 Backend -> Backend: save attachment.file to media storage
 Backend -> Postgres: PSQL: add attachment
 Postgres --> Backend: PSQL: attachment
