@@ -5,12 +5,11 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachmet import AttachmentSerializer
+from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
@@ -58,16 +57,6 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         if self.action == "add_attachment":
             return AttachmentSerializer
 
-    def get_parsers(self):
-        if self.action_map.get("post", None) and self.action_map["post"] == "add_attachment":
-            return [
-                MultiPartParser(),
-            ]
-
-        return [
-            JSONParser(),
-        ]
-
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
     def get_messages(self, request, *args, **kwargs):
@@ -90,13 +79,3 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=True, methods=["POST"])
-    def add_attachment(self, request, *args, **kwargs):
-        context = {"request": request, "pk": kwargs["pk"]}
-
-        serializer = self.get_serializer(data=request.data, context=context)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)

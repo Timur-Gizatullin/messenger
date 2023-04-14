@@ -1,16 +1,23 @@
 from enum import Enum
 
 
-class Action(str, Enum):
+class BaseEnum(str, Enum):
+    @classmethod
+    def get_choices(cls) -> list[tuple[str, str]]:
+        return [(key.name, key.value) for key in cls]
+
+
+class ActionEnum(str, Enum):
     DELETE = "DELETE"
     CREATE = "CREATE"
     UPDATE = "UPDATE"
 
 
-class AttachmentTypeEnum(str, Enum):
+class AttachmentTypeEnum(BaseEnum):
     PICTURE = "PICTURE"
     FILE = "FILE"
 
-    @classmethod
-    def get_choices(cls) -> list[tuple[str, str]]:
-        return [(key.value, key.name) for key in cls]
+
+attachments_type = {
+    "image/png": AttachmentTypeEnum.PICTURE,
+}
