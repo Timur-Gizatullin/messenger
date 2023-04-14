@@ -82,7 +82,7 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
 
     @action(detail=True, methods=["PATCH"], url_path="users/(?P<user_id>[0-9]+)")
     def set_user_role(self, request, *args, **kwargs):
-        context = {"request": request, "pk": kwargs["pk"], "user_id": kwargs["user_id"]}
+        context = {"request": request, "chat_id": kwargs["pk"], "user_to_update_id": kwargs["user_id"]}
 
         serializer = self.get_serializer(data=request.data, context=context)
         serializer.is_valid(raise_exception=True)

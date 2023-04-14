@@ -2,15 +2,16 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
+from core import constants
 from core.models.user_chat import UserChat
 from core.utils.enums import ChatRoleEnum
 from tests.factories.chat import ChatFactory
 from tests.factories.user import UserFactory
 
 
-@pytest.mark.parametrize("role", ["ADMIN", "MEMBER"])
+@pytest.mark.parametrize("current_user_chat_role", ["ADMIN", "MEMBER"])
 @pytest.mark.django_db
-def test__set_user_role__when_user_is_admin(api_client, role):
+def test__set_user_role__when_user_is_admin(api_client, current_user_chat_role):
     owner = UserFactory()
     user_to_update = UserFactory()
     chat = ChatFactory(users=[owner, user_to_update])
@@ -19,17 +20,17 @@ def test__set_user_role__when_user_is_admin(api_client, role):
     owner_chat.save()
 
     api_client.force_authenticate(user=owner)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": role})
+    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["chat"] == chat.pk
     assert response.data["user"] == user_to_update.pk
-    assert response.data["role"] == role
+    assert response.data["role"] == current_user_chat_role
 
 
-@pytest.mark.parametrize("role", ["ADMIN", "MEMBER"])
+@pytest.mark.parametrize("current_user_chat_role", ["ADMIN", "MEMBER"])
 @pytest.mark.django_db
-def test__set_user_role__when_user_is_owner(api_client, role):
+def test__set_user_role__when_user_is_owner(api_client, current_user_chat_role):
     admin = UserFactory()
     user_to_update = UserFactory()
     chat = ChatFactory(users=[admin, user_to_update])
@@ -38,31 +39,31 @@ def test__set_user_role__when_user_is_owner(api_client, role):
     admin_chat.save()
 
     api_client.force_authenticate(user=admin)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": role})
+    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["chat"] == chat.pk
     assert response.data["user"] == user_to_update.pk
-    assert response.data["role"] == role
+    assert response.data["role"] == current_user_chat_role
 
 
-@pytest.mark.parametrize("role", ["ADMIN", "MEMBER", "OWNER"])
+@pytest.mark.parametrize("current_user_chat_role", ["ADMIN", "MEMBER", "OWNER"])
 @pytest.mark.django_db
-def test__set_user_role__when_user_is_member(api_client, role):
+def test__set_user_role__when_user_is_member(api_client, current_user_chat_role):
     member = UserFactory()
     user_to_update = UserFactory()
     chat = ChatFactory(users=[member, user_to_update])
 
     api_client.force_authenticate(user=member)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": role})
+    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["non_field_errors"][0] == "MEMBER role doesnt allow update user roles"
+    assert response.json()["non_field_errors"][0] == constants.YOU_CANNOT_SET_THE_ROLE_OF_OTHERS_USERS_OF_THIS_CHAT
 
 
-@pytest.mark.parametrize("role", ["ADMIN", "MEMBER", "OWNER"])
+@pytest.mark.parametrize("current_user_chat_role", ["ADMIN", "MEMBER", "OWNER"])
 @pytest.mark.django_db
-def test__set_user_role__when_admin_updating_owner(api_client, role):
+def test__set_user_role__when_admin_updating_owner(api_client, current_user_chat_role):
     admin = UserFactory()
     user_to_update = UserFactory()
     chat = ChatFactory(users=[admin, user_to_update])
@@ -74,10 +75,10 @@ def test__set_user_role__when_admin_updating_owner(api_client, role):
     owner_chat.save()
 
     api_client.force_authenticate(user=admin)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": role})
+    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["non_field_errors"][0] == "Impossible to update owner role"
+    assert response.json()["non_field_errors"][0] == constants.OWNER_ROLE_IS_IMMUTABLE
 
 
 @pytest.mark.django_db
@@ -93,7 +94,7 @@ def test__set_user_role__when_new_role_is_owner(api_client):
     response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": "OWNER"})
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert response.json()["non_field_errors"][0] == "OWNER is not allowed as choice"
+    assert response.json()["non_field_errors"][0] == constants.OWNER_IS_NOT_ALLOWED_AS_CHOICE
 
 
 @pytest.mark.django_db
