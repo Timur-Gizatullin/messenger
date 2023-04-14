@@ -15,7 +15,7 @@ def test__get_last_message__when_exist():
 
     serializer = ChatSerializer(chat)
 
-    assert serializer.data["last_message"].text == last_message.text
+    assert serializer.data["last_message"]["text"] == last_message.text
 
 
 @pytest.mark.django_db
