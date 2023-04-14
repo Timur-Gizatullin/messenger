@@ -20,7 +20,9 @@ def test__set_user_role__when_user_is_admin(api_client, current_user_chat_role):
     owner_chat.save()
 
     api_client.force_authenticate(user=owner)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
+    response = api_client.patch(
+        reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role}
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["chat"] == chat.pk
@@ -39,7 +41,9 @@ def test__set_user_role__when_user_is_owner(api_client, current_user_chat_role):
     admin_chat.save()
 
     api_client.force_authenticate(user=admin)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
+    response = api_client.patch(
+        reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role}
+    )
 
     assert response.status_code == status.HTTP_200_OK
     assert response.data["chat"] == chat.pk
@@ -55,7 +59,9 @@ def test__set_user_role__when_user_is_member(api_client, current_user_chat_role)
     chat = ChatFactory(users=[member, user_to_update])
 
     api_client.force_authenticate(user=member)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
+    response = api_client.patch(
+        reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role}
+    )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["non_field_errors"][0] == constants.YOU_CANNOT_SET_THE_ROLE_OF_OTHERS_USERS_OF_THIS_CHAT
@@ -75,7 +81,9 @@ def test__set_user_role__when_admin_updating_owner(api_client, current_user_chat
     owner_chat.save()
 
     api_client.force_authenticate(user=admin)
-    response = api_client.patch(reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role})
+    response = api_client.patch(
+        reverse("chat-set-user-role", [chat.pk, user_to_update.pk]), data={"role": current_user_chat_role}
+    )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST
     assert response.json()["non_field_errors"][0] == constants.OWNER_ROLE_IS_IMMUTABLE
