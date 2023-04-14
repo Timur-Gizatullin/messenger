@@ -4,11 +4,11 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from api.mixins import PaginateMixin
 from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
@@ -17,7 +17,7 @@ from core.models import Chat, Message
 from core.models.attachment import Attachment
 
 
-class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
+class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -60,16 +60,7 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
     def get_messages(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        paginator = LimitOffsetPagination()
-        page = paginator.paginate_queryset(queryset, request, view=self)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return self.paginated_list(request, *args, **kwargs)
 
     @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
     def delete_message(self, request, *args, **kwargs):
@@ -83,13 +74,4 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"])
     def get_attachments(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        paginator = LimitOffsetPagination()
-        page = paginator.paginate_queryset(queryset, request, view=self)
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
+        return self.paginated_list(request, *args, **kwargs)
