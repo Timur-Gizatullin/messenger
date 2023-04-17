@@ -1,8 +1,8 @@
 from rest_framework import serializers
 
-from core.models import Chat
+from core.models import Chat, Message
 from core.models.attachment import Attachment
-from core.utils.enums import AttachmentTypeEnum, attachments_type
+from core.utils.enums import AttachmentTypeEnum, attachments_type_map
 
 
 class AttachmentSerializer(serializers.ModelSerializer):
@@ -35,10 +35,10 @@ class AttachmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Choose only one object to reply")
 
         Chat.objects.validate_before_create_message(user_id=self.context["request"].user.pk, chat_id=attrs["chat"].pk)
-        Chat.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, chat_object=reply_to_message)
-        Chat.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, chat_object=reply_to_attachment)
+        Message.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, message=reply_to_message)
+        Attachment.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, attachment=reply_to_attachment)
 
-        attrs["type"] = attachments_type.get(self.context["request"].data["file"].content_type, AttachmentTypeEnum.FILE)
+        attrs["type"] = attachments_type_map.get(self.context["request"].data["file"].content_type, AttachmentTypeEnum.FILE)
 
         attrs["created_by"] = self.context["request"].user
 

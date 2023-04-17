@@ -1,7 +1,15 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from core import constants
 from core.models.mixins import CreatedAtUpdatedAtMixin
+
+
+class MessageManager(models.Manager):
+    @staticmethod
+    def is_object_part_of_chat(chat_id: int, message: type("Message") | None):
+        if message and message.chat.pk != chat_id:  # type: ignore
+            raise ValidationError("Chosen message is not part of chat")
 
 
 class Message(CreatedAtUpdatedAtMixin):
@@ -28,3 +36,5 @@ class Message(CreatedAtUpdatedAtMixin):
         verbose_name="Кем сообщение было переслано",
     )
     text = models.CharField(max_length=255, null=False, verbose_name="Текст сообщения")
+
+    objects = MessageManager()

@@ -1,8 +1,16 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from core import constants
 from core.models.mixins import CreatedAtUpdatedAtMixin
 from core.utils.enums import AttachmentTypeEnum
+
+
+class AttachmentManager(models.Manager):
+    @staticmethod
+    def is_object_part_of_chat(chat_id: int, attachment: type("Attachment") | None):
+        if attachment and attachment.chat.pk != chat_id:  # type: ignore
+            raise ValidationError("Chosen attachment is not part of chat")
 
 
 class Attachment(CreatedAtUpdatedAtMixin):
@@ -46,3 +54,5 @@ class Attachment(CreatedAtUpdatedAtMixin):
         default=AttachmentTypeEnum.FILE,
         verbose_name="Тип вложения",
     )
+
+    objects = AttachmentManager()

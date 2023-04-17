@@ -19,7 +19,7 @@ def get_image_data(size: tuple[int, int]) -> BytesIO:
     return image_data
 
 
-def get_test_data_file() -> BytesIO:
+def get_data_file() -> BytesIO:
     data = BytesIO(b"test_file")
     data.name = "file.txt"
     data.seek(0)

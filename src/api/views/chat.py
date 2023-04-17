@@ -9,7 +9,6 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
@@ -54,8 +53,6 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
-        if self.action == "add_attachment":
-            return AttachmentSerializer
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")

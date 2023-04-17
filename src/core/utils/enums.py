@@ -18,6 +18,6 @@ class AttachmentTypeEnum(BaseEnum):
     FILE = "FILE"
 
 
-attachments_type = {
+attachments_type_map = {
     "image/png": AttachmentTypeEnum.PICTURE,
 }
