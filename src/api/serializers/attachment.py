@@ -12,7 +12,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
             "chat",
-            "created_by",
+            "author",
             "file",
             "type",
             "forwarded_by",
@@ -22,7 +22,7 @@ class AttachmentSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             "created_at": {"read_only": True},
             "updated_at": {"read_only": True},
-            "created_by": {"read_only": True},
+            "author": {"read_only": True},
             "type": {"read_only": True},
             "forwarded_by": {"read_only": True},
         }
@@ -32,14 +32,18 @@ class AttachmentSerializer(serializers.ModelSerializer):
         reply_to_attachment = attrs.get("reply_to_attachment", None)
 
         if reply_to_message and reply_to_attachment:
-            raise serializers.ValidationError("Choose only one object to reply")
+            raise serializers.ValidationError("Choose only one: reply_to_message or reply_to_attachment")
 
         Chat.objects.validate_before_create_message(user_id=self.context["request"].user.pk, chat_id=attrs["chat"].pk)
-        Message.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, message=reply_to_message)
-        Attachment.objects.is_object_part_of_chat(chat_id=attrs["chat"].pk, attachment=reply_to_attachment)
+        if reply_to_message:
+            Message.objects.is_part_of_chat(chat_id=attrs["chat"].pk, message=reply_to_message)
+        if reply_to_attachment:
+            Attachment.objects.is_part_of_chat(chat_id=attrs["chat"].pk, attachment=reply_to_attachment)
 
-        attrs["type"] = attachments_type_map.get(self.context["request"].data["file"].content_type, AttachmentTypeEnum.FILE)
+        attrs["type"] = attachments_type_map.get(
+            self.context["request"].data["file"].content_type, AttachmentTypeEnum.FILE
+        )
 
-        attrs["created_by"] = self.context["request"].user
+        attrs["author"] = self.context["request"].user
 
         return attrs

@@ -8,13 +8,13 @@ from core.utils.enums import AttachmentTypeEnum
 
 class AttachmentManager(models.Manager):
     @staticmethod
-    def is_object_part_of_chat(chat_id: int, attachment: type("Attachment") | None):
-        if attachment and attachment.chat.pk != chat_id:  # type: ignore
+    def is_part_of_chat(chat_id: int, attachment: "Attachment"):
+        if attachment.chat.pk != chat_id:
             raise ValidationError("Chosen attachment is not part of chat")
 
 
 class Attachment(CreatedAtUpdatedAtMixin):
-    created_by = models.ForeignKey(
+    author = models.ForeignKey(
         "User",
         on_delete=models.SET(constants.DELETED_USER),
         related_name="attachments",

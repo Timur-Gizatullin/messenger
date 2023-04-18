@@ -7,8 +7,8 @@ from core.models.mixins import CreatedAtUpdatedAtMixin
 
 class MessageManager(models.Manager):
     @staticmethod
-    def is_object_part_of_chat(chat_id: int, message: type("Message") | None):
-        if message and message.chat.pk != chat_id:  # type: ignore
+    def is_part_of_chat(chat_id: int, message: "Message"):
+        if message.chat.pk != chat_id:
             raise ValidationError("Chosen message is not part of chat")
 
 

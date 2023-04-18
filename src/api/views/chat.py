@@ -13,7 +13,6 @@ from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
 from core.models import Chat, Message
-from core.models.attachment import Attachment
 
 
 class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -22,8 +21,6 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
     def get_queryset(self):
         if self.action in ("get_messages", "delete_message"):
             return Message.objects.all()
-        if self.action == "add_attachment":
-            return Attachment.objects.all()
 
         return Chat.objects.all()
 
