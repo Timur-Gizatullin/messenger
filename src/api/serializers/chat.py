@@ -85,9 +85,9 @@ class UserChatSerializer(serializers.ModelSerializer):
             UserChat, Q(chat__id=self.context["chat_id"]) & Q(user=self.context["request"].user)
         )
 
-        if not UserChat.objects.is_user_has_permission_to_update_role(user_role=current_user_chat.role):
+        if not current_user_chat.can_update_roles():
             raise serializers.ValidationError(constants.YOU_CANNOT_SET_THE_ROLE_OF_OTHERS_USERS_OF_THIS_CHAT)
-        if UserChat.objects.is_user_under_update_owner(user_role=user_chat_to_update.role):
+        if user_chat_to_update.is_chat_owner():
             raise serializers.ValidationError(constants.OWNER_ROLE_IS_IMMUTABLE)
         if attrs["role"] == ChatRoleEnum.OWNER:
             raise serializers.ValidationError(constants.OWNER_IS_NOT_ALLOWED_AS_CHOICE)
