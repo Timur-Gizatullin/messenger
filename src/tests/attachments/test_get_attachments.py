@@ -12,8 +12,8 @@ from tests.factories.user import UserFactory
 def test__get_attachment__when_user_is_a_chat_member(limit, offset, expected_len, api_client):
     user = UserFactory()
     chat = ChatFactory.create_batch(2, users=[user])
-    AttachmentFactory.create_batch(33, user=user, chat=chat[0])
-    AttachmentFactory.create_batch(22, user=user, chat=chat[1])
+    AttachmentFactory.create_batch(33, author=user, chat=chat[0])
+    AttachmentFactory.create_batch(22, author=user, chat=chat[1])
 
     api_client.force_authenticate(user=user)
     response = api_client.get(reverse("chat-get-attachments", args=[chat[0].pk]), {"limit": limit, "offset": offset})
@@ -35,8 +35,8 @@ def test__get_attachment__when_user_is_not_a_chat_member(limit, offset, expected
     user = UserFactory()
     user_member = UserFactory()
     chat = ChatFactory.create_batch(2, users=[user_member])
-    AttachmentFactory.create_batch(33, user=user_member, chat=chat[0])
-    AttachmentFactory.create_batch(22, user=user_member, chat=chat[1])
+    AttachmentFactory.create_batch(33, author=user_member, chat=chat[0])
+    AttachmentFactory.create_batch(22, author=user_member, chat=chat[1])
 
     api_client.force_authenticate(user=user)
     response = api_client.get(reverse("chat-get-attachments", args=[chat[0].pk]), {"limit": limit, "offset": offset})

@@ -11,4 +11,4 @@ class AttachmentFactory(factory.django.DjangoModelFactory):
         model = Attachment
 
     chat = SubFactory(ChatFactory)
-    user = SubFactory(UserFactory)
+    author = SubFactory(UserFactory)

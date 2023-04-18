@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.mixins import PaginateMixin
+from api.views.mixins import PaginateMixin
 from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
@@ -60,7 +60,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
     def get_messages(self, request, *args, **kwargs):
-        return self.paginated_list(request, *args, **kwargs)
+        return self.get_paginated_queryset(request, *args, **kwargs)
 
     @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
     def delete_message(self, request, *args, **kwargs):
@@ -74,4 +74,4 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"])
     def get_attachments(self, request, *args, **kwargs):
-        return self.paginated_list(request, *args, **kwargs)
+        return self.get_paginated_queryset(request, *args, **kwargs)
