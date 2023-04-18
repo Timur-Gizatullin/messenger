@@ -7,14 +7,34 @@ updated_at: datetime <<generated>>
 *is_dialog: bool
 }
 
+entity AttachmentTypeEnum {
+CREATE: "CREATE"
+DELETE: "DELETE"
+UPDATE: "UPDATE"
+}
+
+entity Attachment {
+* pk
+__
+author: number <<FK>>
+*created_at: datetime <<generated>>
+updated_at: datetime <<generated>>
+chat_id: number <<FK>>
+reply_to_message: number <<FK>>
+reply_to_attachment: number <<FK>>
+forward_by: number <<FK>>
+file: filefield
+type: AttachmentTypeEnum
+}
+
 entity Message {
 * pk
 __
 *author_id: number <<FK>>
 *chat_id: number <<FK>>
-reply_to: number <<FK>>
+reply_to_message: number <<FK>>
+reply_to_attachment: number <<FK>>
 text: text
-picture: text <<PATH>>
 forward_by: number <<FK>>
 *sent_at: datetime <<generated>>
 }
@@ -28,23 +48,38 @@ __
 name: text
 surname: text
 updated_at: datetime
-profile_picture: text <<PATH>>
+profile_picture: imagefield
 }
 
-entity ChatUser {
+entity ChatRoleEnum {
+OWNER: "OWNER"
+ADMIN: "ADMIN"
+MEMBER: "MEMBER"
+}
+
+entity UserChat {
 * pk
 __
 * chat_id: Number <<FK>>
 * user_id: Number <<FK>>
+* role: ChatRoleEnum <<default: MEMBER>>
 }
 
 
-ChatUser }|-- User
-ChatUser }|-- Chat
+UserChat }|-- User
+UserChat }|-- Chat
 
 
 Message }|-- User
 Message }|-- Chat
 
+Attachment }|-- Chat
+
 Message ||--|| Message
+Message ||--|| Attachment
+
+Attachment ||--|| Message
+Attachment ||--|| Attachment
+
+Attachment }|-- User
 @enduml
