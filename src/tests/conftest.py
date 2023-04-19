@@ -17,3 +17,11 @@ def get_image_data(size: tuple[int, int]) -> BytesIO:
     image.save(image_data, format="png")
     image_data.seek(0)
     return image_data
+
+
+def get_data_file() -> BytesIO:
+    data = BytesIO(b"test_file")
+    data.name = "file.txt"
+    data.seek(0)
+
+    return data

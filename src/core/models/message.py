@@ -1,4 +1,5 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from core import constants
 from core.models.mixins import CreatedAtUpdatedAtMixin
@@ -28,3 +29,6 @@ class Message(CreatedAtUpdatedAtMixin):
         verbose_name="Кем сообщение было переслано",
     )
     text = models.CharField(max_length=255, null=False, verbose_name="Текст сообщения")
+
+    def is_part_of_chat(self, chat_id: int) -> bool:
+        return self.chat.pk == chat_id
