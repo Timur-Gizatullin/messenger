@@ -6,13 +6,6 @@ from core.models.mixins import CreatedAtUpdatedAtMixin
 from core.utils.enums import AttachmentTypeEnum
 
 
-class AttachmentManager(models.Manager):
-    @staticmethod
-    def is_part_of_chat(chat_id: int, attachment: "Attachment"):
-        if attachment.chat.pk != chat_id:
-            raise ValidationError("Chosen attachment is not part of chat")
-
-
 class Attachment(CreatedAtUpdatedAtMixin):
     author = models.ForeignKey(
         "User",
@@ -55,4 +48,5 @@ class Attachment(CreatedAtUpdatedAtMixin):
         verbose_name="Тип вложения",
     )
 
-    objects = AttachmentManager()
+    def is_part_of_chat(self, chat_id: int) -> bool:
+        return self.chat.pk == chat_id

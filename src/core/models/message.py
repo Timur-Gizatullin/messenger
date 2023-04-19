@@ -5,13 +5,6 @@ from core import constants
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
 
-class MessageManager(models.Manager):
-    @staticmethod
-    def is_part_of_chat(chat_id: int, message: "Message"):
-        if message.chat.pk != chat_id:
-            raise ValidationError("Chosen message is not part of chat")
-
-
 class Message(CreatedAtUpdatedAtMixin):
     author = models.ForeignKey(
         "User", on_delete=models.SET("DELETED"), related_name="messages", verbose_name="Отправитель"
@@ -37,4 +30,5 @@ class Message(CreatedAtUpdatedAtMixin):
     )
     text = models.CharField(max_length=255, null=False, verbose_name="Текст сообщения")
 
-    objects = MessageManager()
+    def is_part_of_chat(self, chat_id: int) -> bool:
+        return self.chat.pk == chat_id

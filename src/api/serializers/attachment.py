@@ -35,10 +35,10 @@ class AttachmentSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Choose only one: reply_to_message or reply_to_attachment")
 
         Chat.objects.validate_before_create_message(user_id=self.context["request"].user.pk, chat_id=attrs["chat"].pk)
-        if reply_to_message:
-            Message.objects.is_part_of_chat(chat_id=attrs["chat"].pk, message=reply_to_message)
-        if reply_to_attachment:
-            Attachment.objects.is_part_of_chat(chat_id=attrs["chat"].pk, attachment=reply_to_attachment)
+        if reply_to_message and not reply_to_message.is_part_of_chat(chat_id=attrs["chat"].pk):
+            raise serializers.ValidationError("Chosen message is not part of chat")
+        if reply_to_attachment and not reply_to_attachment.is_part_of_chat(chat_id=attrs["chat"].pk):
+            raise serializers.ValidationError("Chosen attachment is not part of chat")
 
         attrs["type"] = attachments_type_map.get(
             self.context["request"].data["file"].content_type, AttachmentTypeEnum.FILE
