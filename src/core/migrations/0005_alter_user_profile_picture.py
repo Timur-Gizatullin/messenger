@@ -2,7 +2,7 @@
 
 import stdimage.models
 import stdimage.validators
-from django.db import migrations, models
+from django.db import migrations
 
 
 class Migration(migrations.Migration):
@@ -22,15 +22,5 @@ class Migration(migrations.Migration):
                 variations={"thumbnail": {"height": 100, "width": 100}},
                 verbose_name="Фотография профиля",
             ),
-        ),
-        migrations.RemoveField(
-            model_name="message",
-            name="picture",
-        ),
-        migrations.AlterField(
-            model_name="message",
-            name="text",
-            field=models.CharField(default=2, max_length=255, verbose_name="Текст сообщения"),
-            preserve_default=False,
         ),
     ]
