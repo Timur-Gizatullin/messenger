@@ -1,6 +1,12 @@
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 
+from api.serializers.message import MessageSerializer
+from core import constants
 from core.models import Chat, Message, User
+from core.models.user_chat import UserChat
+from core.utils.enums import ChatRoleEnum
 
 
 class ChatUserSerializer(serializers.ModelSerializer):
@@ -16,10 +22,16 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
+        depth = 1
         fields = ["pk", "users", "last_message", "is_dialog"]
+        extra_kwargs = {"users": {"many": True}}
 
     def get_last_message(self, chat: Chat) -> Message:
-        return Message.objects.filter(chat=chat.pk).reverse().first()
+        message = Message.objects.filter(chat=chat.pk).reverse().first()
+        if message:
+            message = MessageSerializer(message)
+            return message.data
+        return message
 
 
 class ChatCreateSerializer(ChatSerializer):
@@ -52,5 +64,41 @@ class ChatCreateSerializer(ChatSerializer):
         users_queryset = User.objects.all().filter(pk__in=validated_users)
         chat.users.set(users_queryset)
         chat.save()
+        user_chat = UserChat.objects.filter(user=self.context["request"].user).filter(chat=chat).get()
+        user_chat.role = ChatRoleEnum.OWNER
+        user_chat.save()
 
         return chat
+
+
+class UserChatSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserChat
+        fields = ["user", "chat", "role"]
+        extra_kwargs = {"user": {"read_only": True}, "chat": {"read_only": True}}
+
+    def validate(self, attrs):
+        user_chat_to_update = get_object_or_404(
+            UserChat, Q(chat__id=self.context["chat_id"]) & Q(user=self.context["user_to_update_id"])
+        )
+        current_user_chat = get_object_or_404(
+            UserChat, Q(chat__id=self.context["chat_id"]) & Q(user=self.context["request"].user)
+        )
+
+        if not current_user_chat.can_update_roles():
+            raise serializers.ValidationError(constants.YOU_CANNOT_SET_THE_ROLE_OF_OTHERS_USERS_OF_THIS_CHAT)
+        if user_chat_to_update.is_chat_owner():
+            raise serializers.ValidationError(constants.OWNER_ROLE_IS_IMMUTABLE)
+        if attrs["role"] == ChatRoleEnum.OWNER:
+            raise serializers.ValidationError(constants.OWNER_IS_NOT_ALLOWED_AS_CHOICE)
+
+        attrs["user_chat_to_update"] = user_chat_to_update
+
+        return attrs
+
+    def create(self, validated_data):
+        user_chat_to_update = validated_data["user_chat_to_update"]
+        user_chat_to_update.role = validated_data["role"]
+        user_chat_to_update.save()
+
+        return user_chat_to_update

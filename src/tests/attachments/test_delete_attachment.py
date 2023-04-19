@@ -10,7 +10,7 @@ from tests.factories.user import UserFactory
 @pytest.mark.django_db
 def test__delete_attachment__success_case(api_client):
     user = UserFactory()
-    attachment_to_delete = AttachmentFactory(user=user, chat__users=[user])
+    attachment_to_delete = AttachmentFactory(author=user, chat__users=[user])
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
@@ -22,7 +22,7 @@ def test__delete_attachment__success_case(api_client):
 @pytest.mark.django_db
 def test__delete_attachment__when_user_is_not_chat_member(api_client):
     user = UserFactory()
-    attachment_to_delete = AttachmentFactory(user=user)
+    attachment_to_delete = AttachmentFactory(author=user)
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
@@ -50,6 +50,7 @@ def test__delete_attachment__when_user_is_not_attachment_owner_and_not_chat_memb
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
     assert response.status_code == status.HTTP_403_FORBIDDEN
+
 
 @pytest.mark.django_db
 def test__delete_attachment__when_its_not_exist(api_client):

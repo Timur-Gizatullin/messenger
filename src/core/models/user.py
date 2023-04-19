@@ -3,6 +3,7 @@ from typing import List
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from stdimage import StdImageField
 
 from core.models.mixins import CreatedAtUpdatedAtMixin
 
@@ -40,8 +41,12 @@ class User(AbstractUser, CreatedAtUpdatedAtMixin):
     username = None
     date_joined = None
     email = models.EmailField(max_length=255, unique=True, verbose_name="Почта пользователя")
-    profile_picture = models.ImageField(
-        null=True, blank=True, verbose_name="Фотография профиля", upload_to="user_profile_pictures"
+    profile_picture = StdImageField(
+        null=True,
+        blank=True,
+        verbose_name="Фотография профиля",
+        upload_to="user_profile_pictures",
+        variations={"thumbnail": {"width": 100, "height": 100}},
     )
     is_deleted = models.BooleanField(default=False, verbose_name="Пользователь удален")
 
