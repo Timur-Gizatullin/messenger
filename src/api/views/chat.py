@@ -13,6 +13,7 @@ from api.serializers.chat import (
     ChatCreateSerializer,
     ChatSerializer,
     UserChatSerializer,
+    AddUserToChatSerializer,
 )
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
@@ -56,6 +57,8 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
             return MessageSerializer
         if self.action == "set_user_role":
             return UserChatSerializer
+        if self.action == "add_user":
+            return AddUserToChatSerializer
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -89,3 +92,13 @@ class ChatViewSet(CreateModelMixin, ListModelMixin, GenericViewSet):
         serializer.save()
 
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["PATCH"], url_path="users")
+    def add_user(self, request, *args, **kwargs):
+        context = {"request": request, "chat_id": kwargs["pk"]}
+
+        serializer = self.get_serializer(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        new_users = serializer.save()
+
+        return Response(AddUserToChatSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
