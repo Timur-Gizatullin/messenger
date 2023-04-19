@@ -1,8 +1,9 @@
 import factory
 from factory import SubFactory
 
-from core.models import Attachment
+from core.models.attachment import Attachment
 from tests.factories.chat import ChatFactory
+from tests.factories.user import UserFactory
 
 
 class AttachmentFactory(factory.django.DjangoModelFactory):
@@ -10,3 +11,4 @@ class AttachmentFactory(factory.django.DjangoModelFactory):
         model = Attachment
 
     chat = SubFactory(ChatFactory)
+    author = SubFactory(UserFactory)
