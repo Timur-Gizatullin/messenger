@@ -2,6 +2,7 @@ import pytest
 from rest_framework import status
 from rest_framework.reverse import reverse
 
+from core import constants
 from core.models.attachment import Attachment
 from tests.factories.attachment import AttachmentFactory
 from tests.factories.user import UserFactory
@@ -27,7 +28,8 @@ def test__delete_attachment__when_user_is_not_chat_member(api_client):
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
 @pytest.mark.django_db
@@ -38,7 +40,8 @@ def test__delete_attachment__when_user_is_not_attachment_owner(api_client):
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
 @pytest.mark.django_db
@@ -49,7 +52,8 @@ def test__delete_attachment__when_user_is_not_attachment_owner_and_not_chat_memb
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
 @pytest.mark.django_db
