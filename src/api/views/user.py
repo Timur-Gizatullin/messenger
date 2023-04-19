@@ -19,9 +19,13 @@ class UserViewSet(ListModelMixin, viewsets.GenericViewSet):
 
     def get_parsers(self):
         if self.action_map.get("post", None) and self.action_map["post"] == "upload_profile_picture":
-            return [MultiPartParser(), ]
+            return [
+                MultiPartParser(),
+            ]
 
-        return [JSONParser(), ]
+        return [
+            JSONParser(),
+        ]
 
     def get_serializer_class(self):
         if self.action == "list":

@@ -4,10 +4,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.message import MessageCreateSerializer, MessageSerializer, MessageForwardSerializer
+from api.serializers.message import (
+    MessageCreateSerializer,
+    MessageForwardSerializer,
+    MessageSerializer,
+)
 from api.views.mixins import ChatWebSocketDistributorMixin
 from core.models import Message
-from core.utils.enums import Action
+from core.utils.enums import ActionEnum
 
 
 class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
@@ -26,13 +30,12 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         message = serializer.save()
 
         self.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=Action.CREATE, postfix=[str(message.chat.pk)]
+            data=dict(serializer.data), action=ActionEnum.CREATE, postfix=[str(message.chat.pk)]
         )
 
         return Response(
             MessageSerializer(instance=message, context={"request": request}).data, status=status.HTTP_201_CREATED
         )
-
 
     @action(detail=False, methods=["POST"], url_path="forward")
     def forward(self, request, *args, **kwargs):
