@@ -5,7 +5,8 @@ from core.models.mixins import CreatedAtUpdatedAtMixin
 
 
 class ChatManager(models.Manager):
-    def validate_before_create_message(self, user_id: int, chat_id: int) -> None:
+    @staticmethod
+    def validate_before_create_message(user_id: int, chat_id: int) -> None:
         queryset = Chat.objects.filter(pk=chat_id)
 
         if not queryset.filter(users__id=user_id):
