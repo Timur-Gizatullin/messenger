@@ -10,10 +10,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.chat import (
+    AddUserToChatSerializer,
     ChatCreateSerializer,
     ChatSerializer,
     UserChatSerializer,
-    AddUserToChatSerializer,
 )
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset

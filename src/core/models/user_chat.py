@@ -18,4 +18,3 @@ class UserChat(models.Model):
 
     def can_update_roles(self) -> bool:
         return self.role in (ChatRoleEnum.OWNER, ChatRoleEnum.ADMIN)
-

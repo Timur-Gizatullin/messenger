@@ -1,6 +1,6 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
-from rest_framework import serializers, status
+from rest_framework import serializers
 
 from api.serializers.message import MessageSerializer
 from core import constants
@@ -113,25 +113,21 @@ class AddUserToChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["pk", "user_ids", "email", "profile_picture", ]
-        extra_kwargs = {
-            "email": {"read_only": True},
-            "profile_picture": {"read_only": True}
-        }
+        fields = [
+            "pk",
+            "user_ids",
+            "email",
+            "profile_picture",
+        ]
+        extra_kwargs = {"email": {"read_only": True}, "profile_picture": {"read_only": True}}
 
     def validate(self, attrs):
-        user_chat = UserChat.objects.get(
-            chat=self.context["chat_id"],
-            user=self.context["request"].user.pk
-        )
+        attrs["chat"] = get_object_or_404(Chat, pk=self.context["chat_id"], users=self.context["request"].user)
+
+        user_chat = UserChat.objects.get(chat=self.context["chat_id"], user=self.context["request"].user.pk)
 
         if not user_chat.can_update_roles():
-            raise serializers.ValidationError(
-                constants.YOU_CANNOT_ADD_USERS_TO_THE_CHAT,
-                code=status.HTTP_403_FORBIDDEN
-            )
-
-        attrs["chat"] = get_object_or_404(Chat, pk=self.context["chat_id"], users=self.context["request"].user)
+            raise serializers.ValidationError(constants.YOU_CANNOT_ADD_USERS_TO_THE_CHAT)
 
         return attrs
 
