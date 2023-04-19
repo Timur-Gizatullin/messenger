@@ -9,7 +9,7 @@ import core.utils.enums
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("core", "0006_remove_message_picture"),
+        ("core", "0007_userchat_alter_chat_users"),
     ]
 
     operations = [

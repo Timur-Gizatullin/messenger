@@ -21,3 +21,9 @@ class AttachmentTypeEnum(BaseEnum):
 attachments_type_map = {
     "image/png": AttachmentTypeEnum.PICTURE,
 }
+
+
+class ChatRoleEnum(BaseEnum):
+    OWNER = "OWNER"
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"
