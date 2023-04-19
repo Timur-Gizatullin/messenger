@@ -1,4 +1,5 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 from core import constants
 from core.models.mixins import CreatedAtUpdatedAtMixin
@@ -46,3 +47,6 @@ class Attachment(CreatedAtUpdatedAtMixin):
         default=AttachmentTypeEnum.FILE,
         verbose_name="Тип вложения",
     )
+
+    def is_part_of_chat(self, chat_id: int) -> bool:
+        return self.chat.pk == chat_id

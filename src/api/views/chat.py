@@ -9,8 +9,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.views.mixins import PaginateMixin
+from api.serializers.chat import (
+    ChatCreateSerializer,
+    ChatSerializer,
+    UserChatSerializer,
+)
 from api.serializers.attachment import AttachmentSerializer
-from api.serializers.chat import ChatCreateSerializer, ChatSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
 from core.models import Chat, Message
@@ -54,6 +58,8 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
+        if self.action == "set_user_role":
+            return UserChatSerializer
         if self.action == "get_attachments":
             return AttachmentSerializer
 
@@ -70,6 +76,16 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=True, methods=["PATCH"], url_path="users/(?P<user_id>[0-9]+)")
+    def set_user_role(self, request, *args, **kwargs):
+        context = {"request": request, "chat_id": kwargs["pk"], "user_to_update_id": kwargs["user_id"]}
+
+        serializer = self.get_serializer(data=request.data, context=context)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"])

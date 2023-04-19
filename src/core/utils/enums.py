@@ -7,7 +7,7 @@ class BaseEnum(str, Enum):
         return [(key.name, key.value) for key in cls]
 
 
-class Action(str, Enum):
+class ActionEnum(str, Enum):
     DELETE = "DELETE"
     CREATE = "CREATE"
     UPDATE = "UPDATE"
@@ -16,3 +16,14 @@ class Action(str, Enum):
 class AttachmentTypeEnum(BaseEnum):
     PICTURE = "PICTURE"
     FILE = "FILE"
+
+
+attachments_type_map = {
+    "image/png": AttachmentTypeEnum.PICTURE,
+}
+
+
+class ChatRoleEnum(BaseEnum):
+    OWNER = "OWNER"
+    ADMIN = "ADMIN"
+    MEMBER = "MEMBER"

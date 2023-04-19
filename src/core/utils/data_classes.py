@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 
-from core.utils.enums import Action
+from core.utils.enums import ActionEnum
 
 
 @dataclass
 class WSContent:
-    type: Action
+    type: ActionEnum
     data: dict
 
 

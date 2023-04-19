@@ -7,14 +7,14 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from core.utils.data_classes import WSContent, WSMessage
-from core.utils.enums import Action
+from core.utils.enums import ActionEnum
 from core.utils.key_schemas import BaseKeySchema
 
 
 class WebSocketDistributorMixin:
     key_schema: BaseKeySchema
 
-    def distribute_to_ws_consumers(self, data: dict, action: Action, postfix: List[str]) -> None:
+    def distribute_to_ws_consumers(self, data: dict, action: ActionEnum, postfix: List[str]) -> None:
         channel_layer = get_channel_layer()
 
         group_name = self.key_schema.get_key(postfix=postfix)
