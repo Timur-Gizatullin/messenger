@@ -19,5 +19,5 @@ class UserChat(models.Model):
     def can_update_roles(self) -> bool:
         return self.role in (ChatRoleEnum.OWNER, ChatRoleEnum.ADMIN)
 
-    def can_delete_user(self) -> bool:
+    def can_delete_user_from_chat(self) -> bool:
         return self.role in (ChatRoleEnum.OWNER, ChatRoleEnum.ADMIN)

@@ -102,7 +102,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
 
         if user_chat_to_delete.is_chat_owner():
             return Response(data=constants.YOU_CANNOT_DELETE_CHAT_OWNER, status=status.HTTP_403_FORBIDDEN)
-        if not get_object_or_404(UserChat, user=request.user, chat__id=kwargs["pk"]).can_delete_user():
+        if not get_object_or_404(UserChat, user=request.user, chat__id=kwargs["pk"]).can_delete_user_from_chat():
             return Response(data=constants.YOU_HAVE_NO_PERMISSION_TO_DELETE_USER, status=status.HTTP_403_FORBIDDEN)
 
         user_chat_to_delete.delete()
