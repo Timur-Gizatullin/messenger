@@ -126,8 +126,8 @@ class AddUserToChatSerializer(serializers.ModelSerializer):
 
         user_chat = UserChat.objects.get(chat=self.context["chat_id"], user=self.context["request"].user.pk)
 
-        if not user_chat.can_update_roles():
-            raise serializers.ValidationError(constants.YOU_CANNOT_ADD_USERS_TO_THE_CHAT)
+        if not user_chat.can_add_or_delete_user_from_chat():
+            raise serializers.ValidationError(constants.ONLY_ADMIN_OR_OWNER_CAN_ADD_USERS_TO_CHAT)
 
         return attrs
 
