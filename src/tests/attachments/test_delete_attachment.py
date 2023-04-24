@@ -28,31 +28,31 @@ def test__delete_attachment__when_user_is_not_chat_member(api_client):
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
 @pytest.mark.django_db
-def test__delete_attachment__when_user_is_not_attachment_owner(api_client):
+def test__delete_attachment__when_user_is_not_attachment_author(api_client):
     user = UserFactory()
     attachment_to_delete = AttachmentFactory(chat__users=[user])
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
 @pytest.mark.django_db
-def test__delete_attachment__when_user_is_not_attachment_owner_and_not_chat_member(api_client):
+def test__delete_attachment__when_user_is_not_attachment_author_and_not_chat_member(api_client):
     user = UserFactory()
     attachment_to_delete = AttachmentFactory()
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [attachment_to_delete.pk]))
 
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert response.status_code == status.HTTP_403_FORBIDDEN
     assert response.json() == constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR
 
 
@@ -60,6 +60,7 @@ def test__delete_attachment__when_user_is_not_attachment_owner_and_not_chat_memb
 def test__delete_attachment__when_its_not_exist(api_client):
     user = UserFactory()
     not_existing_attachment_pk = 42
+    AttachmentFactory(author=user, chat__users=[user, ])
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [not_existing_attachment_pk]))

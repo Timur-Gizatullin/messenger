@@ -46,13 +46,13 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
     def delete_attachment(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
-        instance = get_object_or_404(self.get_queryset(), pk=kwargs["pk"])
-
         if queryset.count() == 0:
             return Response(
                 data=constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR,
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_403_FORBIDDEN
             )
+
+        instance = get_object_or_404(queryset, pk=kwargs["pk"])
 
         instance.delete()
 
