@@ -104,7 +104,7 @@ class UserChatSerializer(serializers.ModelSerializer):
         return user_chat_to_update
 
 
-class AddUserToChatSerializer(serializers.ModelSerializer):
+class AddUserToChatInputSerializer(serializers.ModelSerializer):
     user_ids = serializers.ListSerializer(
         child=serializers.PrimaryKeyRelatedField(queryset=User.objects.all()),
         required=True,
@@ -135,3 +135,21 @@ class AddUserToChatSerializer(serializers.ModelSerializer):
         for new_user in validated_data["user_ids"]:
             validated_data["chat"].users.add(new_user)
         return validated_data["user_ids"]
+
+
+class AddUserToChatOutputSerializer(serializers.ModelSerializer):
+    user_ids = serializers.ListSerializer(
+        child=serializers.PrimaryKeyRelatedField(queryset=User.objects.all()),
+        required=True,
+        write_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "pk",
+            "user_ids",
+            "email",
+            "profile_picture",
+        ]
+        extra_kwargs = {"email": {"read_only": True}, "profile_picture": {"read_only": True}}

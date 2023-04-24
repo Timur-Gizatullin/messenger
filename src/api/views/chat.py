@@ -10,10 +10,10 @@ from rest_framework.viewsets import GenericViewSet
 
 from api.views.mixins import PaginateMixin
 from api.serializers.chat import (
-    AddUserToChatSerializer,
+    AddUserToChatInputSerializer,
     ChatCreateSerializer,
     ChatSerializer,
-    UserChatSerializer,
+    UserChatSerializer, AddUserToChatOutputSerializer,
 )
 from api.serializers.attachment import AttachmentSerializer
 from api.serializers.message import MessageSerializer
@@ -68,7 +68,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
         if self.action == "get_attachments":
             return AttachmentSerializer
         if self.action == "add_user":
-            return AddUserToChatSerializer
+            return AddUserToChatInputSerializer
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"], url_path="messages")
@@ -102,7 +102,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
         serializer.is_valid(raise_exception=True)
         new_users = serializer.save()
 
-        return Response(AddUserToChatSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
+        return Response(AddUserToChatOutputSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
     @action(detail=True, methods=["GET"])
