@@ -11,6 +11,7 @@ class BaseConsumer(AsyncWebsocketConsumer):
         raise NotImplementedError()
 
     async def connect(self):
+        self.user = self.scope["user"]
         self.group_name = self.get_group_name()
         await self.channel_layer.group_add(self.group_name, self.channel_name)
         await self.accept()
