@@ -18,8 +18,10 @@ from api.serializers.chat import (
 from api.serializers.attachment import AttachmentSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
-from core.models import Chat, Message
+from core import constants
+from core.models import Chat, Message, User
 from core.models.attachment import Attachment
+from core.models.user_chat import UserChat
 
 
 class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -30,6 +32,8 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
             return Message.objects.all()
         if self.action == "get_attachments":
             return Attachment.objects.all()
+        if self.action == "delete_user":
+            return User.objects.all()
 
         return Chat.objects.all()
 
@@ -80,7 +84,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=["PATCH"], url_path="users/(?P<user_id>[0-9]+)")
+    @action(detail=True, methods=["PATCH"], url_path="users/(?P<user_id>[0-9]+)/role")
     def set_user_role(self, request, *args, **kwargs):
         context = {"request": request, "chat_id": kwargs["pk"], "user_to_update_id": kwargs["user_id"]}
 
@@ -104,3 +108,16 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
     @action(detail=True, methods=["GET"])
     def get_attachments(self, request, *args, **kwargs):
         return self.get_paginated_queryset(request, *args, **kwargs)
+
+    @action(detail=True, methods=["DELETE"], url_path="users/(?P<user_id>[0-9]+)")
+    def delete_user(self, request, *args, **kwargs):
+        user_chat_to_delete = get_object_or_404(UserChat, user__id=kwargs["user_id"], chat__id=kwargs["pk"])
+
+        if user_chat_to_delete.is_chat_owner():
+            return Response(data=constants.YOU_CANNOT_DELETE_CHAT_OWNER, status=status.HTTP_403_FORBIDDEN)
+        if not get_object_or_404(UserChat, user=request.user, chat__id=kwargs["pk"]).can_delete_user_from_chat():
+            return Response(data=constants.YOU_HAVE_NO_PERMISSION_TO_DELETE_USER, status=status.HTTP_403_FORBIDDEN)
+
+        user_chat_to_delete.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
