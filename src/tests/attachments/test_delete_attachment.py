@@ -60,7 +60,12 @@ def test__delete_attachment__when_user_is_not_attachment_author_and_not_chat_mem
 def test__delete_attachment__when_its_not_exist(api_client):
     user = UserFactory()
     not_existing_attachment_pk = 42
-    AttachmentFactory(author=user, chat__users=[user, ])
+    AttachmentFactory(
+        author=user,
+        chat__users=[
+            user,
+        ],
+    )
 
     api_client.force_authenticate(user=user)
     response = api_client.delete(reverse("attachment-delete-attachment", [not_existing_attachment_pk]))

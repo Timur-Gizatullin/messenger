@@ -8,16 +8,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.views.mixins import PaginateMixin
+from api.serializers.attachment import AttachmentSerializer
 from api.serializers.chat import (
     AddUserToChatInputSerializer,
+    AddUserToChatOutputSerializer,
     ChatCreateSerializer,
     ChatSerializer,
-    UserChatSerializer, AddUserToChatOutputSerializer,
+    UserChatSerializer,
 )
-from api.serializers.attachment import AttachmentSerializer
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
+from api.views.mixins import PaginateMixin
 from core import constants
 from core.models import Chat, Message, User
 from core.models.attachment import Attachment

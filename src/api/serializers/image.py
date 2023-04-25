@@ -6,8 +6,10 @@ class StdImageSerializer(serializers.Serializer):
     original = serializers.SerializerMethodField()
     thumbnail = serializers.SerializerMethodField()
 
-    def get_original(self, picture: StdImageFieldFile) -> str:
-        return picture.url
+    def get_original(self, picture: StdImageFieldFile) -> str | None:
+        if picture:
+            return picture.url
+        return None
 
     def get_thumbnail(self, picture: StdImageFieldFile) -> str | None:
         if hasattr(picture, "thumbnail"):
