@@ -121,7 +121,9 @@ class AddUserToChatInputSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
-        attrs["chat"] = get_object_or_404(Chat, pk=self.context["chat_id"], users=self.context["request"].user)
+        attrs["chat"] = get_object_or_404(Chat, pk=self.context["chat_id"],
+                                          users=self.context["request"].user,
+                                          is_dialog=False)
 
         user_chat = UserChat.objects.get(chat=self.context["chat_id"], user=self.context["request"].user.pk)
 
