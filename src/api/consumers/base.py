@@ -1,7 +1,10 @@
 import json
 
 from channels.generic.websocket import AsyncWebsocketConsumer
+from django.contrib.auth.models import AnonymousUser
 from loguru import logger
+
+from core import constants
 
 
 class BaseConsumer(AsyncWebsocketConsumer):
@@ -11,11 +14,14 @@ class BaseConsumer(AsyncWebsocketConsumer):
         raise NotImplementedError()
 
     async def connect(self):
-        self.user = self.scope["user"]
         self.group_name = self.get_group_name()
-        await self.channel_layer.group_add(self.group_name, self.channel_name)
-        await self.accept()
-        logger.info(f"ws connected to group: {self.group_name}")
+
+        if not self.scope["user"] == AnonymousUser():
+            await self.channel_layer.group_add(self.group_name, self.channel_name)
+            await self.accept()
+            logger.info(f"ws connected to group: {self.group_name}")
+
+        await self.close(code=constants.WS_UNAUTHORIZED_CODE)
 
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
