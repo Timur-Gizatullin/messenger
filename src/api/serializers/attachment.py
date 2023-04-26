@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from core.models import Chat, Message
+from core.models import Chat
 from core.models.attachment import Attachment
 from core.utils.enums import AttachmentTypeEnum, attachments_type_map
 

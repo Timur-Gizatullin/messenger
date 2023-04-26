@@ -1,17 +1,16 @@
-from django.db.models import QuerySet, Q
+from django.db.models import Q, QuerySet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import CreateModelMixin
+from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin
-from rest_framework.parsers import JSONParser, MultiPartParser
 
 from api.serializers.attachment import AttachmentSerializer
 from core import constants
 from core.models.attachment import Attachment
-from core.models.user_chat import UserChat
 
 
 class AttachmentViewSet(CreateModelMixin, GenericViewSet):
@@ -47,10 +46,7 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
         queryset = self.filter_queryset(self.get_queryset())
 
         if queryset.count() == 0:
-            return Response(
-                data=constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR,
-                status=status.HTTP_403_FORBIDDEN
-            )
+            return Response(data=constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR, status=status.HTTP_403_FORBIDDEN)
 
         instance = get_object_or_404(queryset, pk=kwargs["pk"])
 
