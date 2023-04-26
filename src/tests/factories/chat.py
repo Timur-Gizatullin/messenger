@@ -7,6 +7,8 @@ class ChatFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Chat
 
+    is_dialog = False
+
     @factory.post_generation
     def users(self, create, extracted, **kwargs):
         if not create:
