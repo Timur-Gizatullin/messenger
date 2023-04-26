@@ -1,7 +1,9 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from rest_framework.exceptions import PermissionDenied
 
+from api.serializers.image import StdImageSerializer
 from api.serializers.message import MessageSerializer
 from core import constants
 from core.models import Chat, Message, User
@@ -102,3 +104,48 @@ class UserChatSerializer(serializers.ModelSerializer):
         user_chat_to_update.save()
 
         return user_chat_to_update
+
+
+class AddUserToChatInputSerializer(serializers.ModelSerializer):
+    user_ids = serializers.ListSerializer(
+        child=serializers.PrimaryKeyRelatedField(queryset=User.objects.all()),
+        required=True,
+        write_only=True,
+    )
+
+    class Meta:
+        model = User
+        fields = [
+            "pk",
+            "user_ids",
+        ]
+
+    def validate(self, attrs):
+        attrs["chat"] = get_object_or_404(Chat, pk=self.context["chat_id"],
+                                          users=self.context["request"].user,
+                                          is_dialog=False)
+
+        user_chat = UserChat.objects.get(chat=self.context["chat_id"], user=self.context["request"].user.pk)
+
+        if not user_chat.can_add_or_delete_user_from_chat():
+            raise PermissionDenied(constants.ONLY_ADMIN_OR_OWNER_CAN_ADD_USERS_TO_CHAT)
+
+        return attrs
+
+    def create(self, validated_data):
+        for new_user in validated_data["user_ids"]:
+            validated_data["chat"].users.add(new_user)
+        return validated_data["user_ids"]
+
+
+class AddUserToChatOutputSerializer(serializers.ModelSerializer):
+    profile_picture = StdImageSerializer(read_only=True)
+
+    class Meta:
+        model = User
+        fields = [
+            "pk",
+            "email",
+            "profile_picture",
+        ]
+        extra_kwargs = {"email": {"read_only": True}}
