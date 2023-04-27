@@ -1,8 +1,8 @@
 from channels.db import database_sync_to_async
 from channels.sessions import CookieMiddleware, SessionMiddleware
 from django.contrib.auth.models import AnonymousUser
-from rest_framework.authtoken.models import Token
 from loguru import logger
+from rest_framework.authtoken.models import Token
 
 from core.models import User
 
