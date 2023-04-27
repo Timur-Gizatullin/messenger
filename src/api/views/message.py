@@ -1,3 +1,5 @@
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
@@ -24,6 +26,19 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         if self.action == "forward":
             return MessageForwardSerializer
 
+    def filter_queryset(self, queryset):
+        if self.action == "delete_message":
+            return (
+                super()
+                .filter_queryset(queryset)
+                .filter(
+                    Q(chat__users=self.request.user) & Q(author=self.request.user) | Q(forwarded_by=self.request.user)
+                )
+                .distinct()
+            )
+
+        return super().filter_queryset(queryset)
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -45,3 +60,12 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         new_messages = serializer.save()
 
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=["DELETE"])
+    def delete_message(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+
+        instance = get_object_or_404(queryset, pk=kwargs["pk"])
+        instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
