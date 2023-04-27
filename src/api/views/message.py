@@ -44,4 +44,13 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         new_messages = serializer.save()
 
+        ws_response = {
+            "new_messages": [dict(new_message) for new_message in MessageSerializer(new_messages, many=True).data]
+        }
+
+        self.distribute_to_ws_consumers(
+            data=ws_response,
+            action=ActionEnum.CREATE, postfix=[str(request.data["forward_to_chat_id"])]
+        )
+
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)

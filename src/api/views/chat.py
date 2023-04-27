@@ -18,14 +18,15 @@ from api.serializers.chat import (
 )
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
-from api.views.mixins import PaginateMixin
+from api.views.mixins import PaginateMixin, ChatWebSocketDistributorMixin
 from core import constants
 from core.models import Chat, Message, User
 from core.models.attachment import Attachment
 from core.models.user_chat import UserChat
+from core.utils.enums import ActionEnum
 
 
-class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
+class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
@@ -82,6 +83,10 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
 
         instance = get_object_or_404(queryset, pk=kwargs["message_id"])
         instance.delete()
+
+        self.distribute_to_ws_consumers(
+            data=instance, action=ActionEnum.DELETE, postfix=[str(instance.chat.pk)]
+        )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
