@@ -49,8 +49,7 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         }
 
         self.distribute_to_ws_consumers(
-            data=ws_response,
-            action=ActionEnum.CREATE, postfix=[str(request.data["forward_to_chat_id"])]
+            data=ws_response, action=ActionEnum.CREATE, postfix=[str(request.data["forward_to_chat_id"])]
         )
 
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)

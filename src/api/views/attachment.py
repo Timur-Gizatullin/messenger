@@ -63,8 +63,6 @@ class AttachmentViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         instance = get_object_or_404(queryset, pk=kwargs["pk"])
         instance.delete()
 
-        self.distribute_to_ws_consumers(
-            data=instance, action=ActionEnum.DELETE, postfix=[str(instance.chat.pk)]
-        )
+        self.distribute_to_ws_consumers(data=instance, action=ActionEnum.DELETE, postfix=[str(instance.chat.pk)])
 
         return Response(status=status.HTTP_204_NO_CONTENT)
