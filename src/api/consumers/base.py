@@ -16,12 +16,12 @@ class BaseConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.group_name = self.get_group_name()
 
-        if not self.scope["user"] == AnonymousUser():
+        if self.scope["user"] == AnonymousUser():
+            await self.close(code=constants.WS_UNAUTHORIZED_CODE)
+        else:
             await self.channel_layer.group_add(self.group_name, self.channel_name)
             await self.accept()
             logger.info(f"ws connected to group: {self.group_name}")
-
-        await self.close(code=constants.WS_UNAUTHORIZED_CODE)
 
     async def disconnect(self, code):
         await self.channel_layer.group_discard(self.group_name, self.channel_name)
