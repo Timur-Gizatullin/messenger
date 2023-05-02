@@ -36,4 +36,4 @@ class CookieAuthTokenMiddleware:
 
 
 def CookieAuthTokenMiddlewareStack(inner):
-    return CookieMiddleware(SessionMiddleware(CookieAuthTokenMiddleware(inner)))
+    return CookieMiddleware(CookieAuthTokenMiddleware(inner))
