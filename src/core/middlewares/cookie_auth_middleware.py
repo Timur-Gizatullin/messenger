@@ -33,7 +33,3 @@ class CookieAuthTokenMiddleware:
             scope["user"] = await get_user(auth_token)
 
         return await self.inner(scope, receive, send)
-
-
-def CookieAuthTokenMiddlewareStack(inner):
-    return CookieMiddleware(CookieAuthTokenMiddleware(inner))
