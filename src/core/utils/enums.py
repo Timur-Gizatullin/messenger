@@ -27,3 +27,8 @@ class ChatRoleEnum(BaseEnum):
     OWNER = "OWNER"
     ADMIN = "ADMIN"
     MEMBER = "MEMBER"
+
+
+class WSType(BaseEnum):
+    CHAT_MESSAGE = "chat.message"
+    CHAT_CHATS = "chat.chats"

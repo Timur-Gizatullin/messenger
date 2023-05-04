@@ -11,17 +11,17 @@ from api.serializers.message import (
     MessageForwardSerializer,
     MessageSerializer,
 )
-from api.views.mixins import ChatWebSocketDistributorMixin
+from api.views.mixins import ChatWebSocketDistributorMixin, UserChatsWebSocketDistributorMixin
 from core.models import Message
-from core.utils.enums import ActionEnum
+from core.utils.enums import ActionEnum, WSType
 
 
-class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
+class MessageViewSet(GenericViewSet):
     permission_classes = (IsAuthenticated,)
     queryset = Message.objects.all()
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ("create", "delete_message"):
             return MessageCreateSerializer
         if self.action == "forward":
             return MessageForwardSerializer
@@ -44,8 +44,14 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         message = serializer.save()
 
-        self.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=ActionEnum.CREATE, postfix=[str(message.chat.pk)]
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data), action=ActionEnum.CREATE,
+            postfix=[str(message.chat.pk)], ws_type=WSType.CHAT_MESSAGE,
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data), action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(
@@ -63,8 +69,14 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
             "new_messages": [dict(new_message) for new_message in MessageSerializer(new_messages, many=True).data]
         }
 
-        self.distribute_to_ws_consumers(
-            data=ws_response, action=ActionEnum.CREATE, postfix=[str(request.data["forward_to_chat_id"])]
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=ws_response, action=ActionEnum.CREATE,
+            postfix=[str(request.data["forward_to_chat_id"])], ws_type=WSType.CHAT_MESSAGE,
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=ws_response, action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)
@@ -76,6 +88,14 @@ class MessageViewSet(ChatWebSocketDistributorMixin, GenericViewSet):
         instance = get_object_or_404(queryset, pk=kwargs["pk"])
         instance.delete()
 
-        self.distribute_to_ws_consumers(data=instance, action=ActionEnum.DELETE, postfix=[str(instance.chat.pk)])
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
+            postfix=[str(instance.chat.pk)], ws_type=WSType.CHAT_MESSAGE,
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+        )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

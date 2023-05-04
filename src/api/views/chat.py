@@ -18,12 +18,12 @@ from api.serializers.chat import (
 )
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
-from api.views.mixins import ChatWebSocketDistributorMixin, PaginateMixin
+from api.views.mixins import ChatWebSocketDistributorMixin, PaginateMixin, UserChatsWebSocketDistributorMixin
 from core import constants
 from core.models import Chat, Message, User
 from core.models.attachment import Attachment
 from core.models.user_chat import UserChat
-from core.utils.enums import ActionEnum
+from core.utils.enums import ActionEnum, WSType
 
 
 class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -56,7 +56,7 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
             return ChatCreateSerializer
         if self.action == "get_messages":
             return MessageSerializer
-        if self.action == "set_user_role":
+        if self.action in ("set_user_role", "delete_user"):
             return UserChatSerializer
         if self.action == "get_attachments":
             return AttachmentSerializer
@@ -86,6 +86,15 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
         serializer.is_valid(raise_exception=True)
         new_users = serializer.save()
 
+        ws_response = {
+            "new_chat_users": [dict(new_message) for new_message in AddUserToChatOutputSerializer(new_users, many=True).data]
+        }
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=ws_response,
+            action=ActionEnum.CREATE, postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+        )
+
         return Response(AddUserToChatOutputSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
 
     @swagger_auto_schema(manual_parameters=[limit, offset])
@@ -103,5 +112,10 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
             return Response(data=constants.YOU_HAVE_NO_PERMISSION_TO_DELETE_USER, status=status.HTTP_403_FORBIDDEN)
 
         user_chat_to_delete.delete()
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(self.get_serializer(user_chat_to_delete).data), action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+        )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

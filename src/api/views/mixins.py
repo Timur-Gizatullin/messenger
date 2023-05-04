@@ -7,26 +7,33 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 
 from core.utils.data_classes import WSContent, WSMessage
-from core.utils.enums import ActionEnum
+from core.utils.enums import ActionEnum, WSType
 from core.utils.key_schemas import BaseKeySchema
 
 
 class WebSocketDistributorMixin:
     key_schema: BaseKeySchema
 
-    def distribute_to_ws_consumers(self, data: dict, action: ActionEnum, postfix: List[str]) -> None:
+    @classmethod
+    def distribute_to_ws_consumers(cls, data: dict, action: ActionEnum,
+                                   postfix: List[str], ws_type: WSType) -> None:
         channel_layer = get_channel_layer()
 
-        group_name = self.key_schema.get_key(postfix=postfix)
+        group_name = cls.key_schema.get_key(postfix=postfix)
 
         content = WSContent(type=action, data=data)
-        message = WSMessage(type="chat.message", content=content)
+        message = WSMessage(type=ws_type, content=content)
+        dic = asdict(message)
 
         async_to_sync(channel_layer.group_send)(group_name, asdict(message))
 
 
 class ChatWebSocketDistributorMixin(WebSocketDistributorMixin):
     key_schema = BaseKeySchema(prefix="chat")
+
+
+class UserChatsWebSocketDistributorMixin(WebSocketDistributorMixin):
+    key_schema = BaseKeySchema(prefix="user")
 
 
 class PaginateMixin:
