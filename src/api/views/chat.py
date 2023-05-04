@@ -1,4 +1,4 @@
-from django.db.models import Q, QuerySet
+from django.db.models import QuerySet
 from django.shortcuts import get_object_or_404
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status
@@ -29,7 +29,7 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
     permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
-        if self.action in ("get_messages", "delete_message"):
+        if self.action == "get_messages":
             return Message.objects.all()
         if self.action == "get_attachments":
             return Attachment.objects.all()
@@ -44,15 +44,6 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
         if self.action in ("get_messages", "get_attachments"):
             return (
                 super().filter_queryset(queryset).filter(chat__users=self.request.user).filter(chat=self.kwargs["pk"])
-            )
-        if self.action == "delete_message":
-            return (
-                super()
-                .filter_queryset(queryset)
-                .filter(
-                    Q(author=self.request.user)
-                    | Q(forwarded_by=self.request.user) & Q(chat=self.kwargs["pk"]) & Q(chat__users=self.request.user)
-                )
             )
 
         return super().filter_queryset(queryset)
@@ -75,15 +66,6 @@ class ChatViewSet(PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSe
     @action(detail=True, methods=["GET"], url_path="messages")
     def get_messages(self, request, *args, **kwargs):
         return self.get_paginated_queryset(request, *args, **kwargs)
-
-    @action(detail=True, methods=["DELETE"], url_path="messages/(?P<message_id>[0-9]+)")
-    def delete_message(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-
-        instance = get_object_or_404(queryset, pk=kwargs["message_id"])
-        instance.delete()
-
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["PATCH"], url_path="users/(?P<user_id>[0-9]+)/role")
     def set_user_role(self, request, *args, **kwargs):
