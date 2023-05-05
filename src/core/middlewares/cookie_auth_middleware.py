@@ -1,8 +1,7 @@
-from typing import Any
+from typing import Callable
 
 from channels.db import database_sync_to_async
 from channels.routing import URLRouter
-from channels.sessions import CookieMiddleware, SessionMiddleware
 from django.contrib.auth.models import AnonymousUser
 from loguru import logger
 from rest_framework.authtoken.models import Token
@@ -23,7 +22,7 @@ class CookieAuthTokenMiddleware:
     def __init__(self, inner: URLRouter):
         self.inner = inner
 
-    async def __call__(self, scope: dict, receive: callable, send: callable) -> None:
+    async def __call__(self, scope: dict, receive: Callable, send: Callable) -> None:
         auth_token = scope["cookies"].get("auth_token", None)
 
         if not auth_token:

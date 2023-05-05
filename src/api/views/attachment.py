@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachment import AttachmentSerializer
+from api.serializers.attachment import AttachmentForwardSerializer, AttachmentSerializer
 from core import constants
 from core.models.attachment import Attachment
 
@@ -19,6 +19,8 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
     def get_serializer_class(self):
         if self.action == "create":
             return AttachmentSerializer
+        if self.action == "forward":
+            return AttachmentForwardSerializer
 
     def get_queryset(self):
         return Attachment.objects.all()
@@ -53,3 +55,12 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
         instance.delete()
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["POST"], url_path="forward")
+    def forward(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        new_attachments = serializer.save()
+
+        return Response(AttachmentSerializer(new_attachments, many=True).data, status=status.HTTP_201_CREATED)
