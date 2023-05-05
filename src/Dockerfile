@@ -1,6 +1,6 @@
 FROM python:3.10.9-slim
 
-WORKDIR /usr/src/app
+WORKDIR /messenger/src/messenger
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -19,7 +19,7 @@ RUN if [ $DEV_DEPS = True ] ; then \
   poetry install --no-interaction --no-ansi ; else \
   poetry install --no-dev --no-interaction --no-ansi ; fi
 
-COPY .. .
+COPY . .
 
-RUN chmod 777 /usr/src/app/entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+RUN chmod 777 /messenger/src/messenger/entrypoint.sh
+ENTRYPOINT ["/messenger/src/messenger/entrypoint.sh"]
