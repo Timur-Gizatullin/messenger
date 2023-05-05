@@ -15,8 +15,7 @@ class WebSocketDistributorMixin:
     key_schema: BaseKeySchema
 
     @classmethod
-    def distribute_to_ws_consumers(cls, data: dict, action: ActionEnum,
-                                   postfix: List[str], ws_type: WSType) -> None:
+    def distribute_to_ws_consumers(cls, data: dict, action: ActionEnum, postfix: List[str], ws_type: WSType) -> None:
         channel_layer = get_channel_layer()
 
         group_name = cls.key_schema.get_key(postfix=postfix)

@@ -18,7 +18,11 @@ from api.serializers.chat import (
 )
 from api.serializers.message import MessageSerializer
 from api.utils import limit, offset
-from api.views.mixins import ChatWebSocketDistributorMixin, PaginateMixin, UserChatsWebSocketDistributorMixin
+from api.views.mixins import (
+    ChatWebSocketDistributorMixin,
+    PaginateMixin,
+    UserChatsWebSocketDistributorMixin,
+)
 from core import constants
 from core.models import Chat, Message, User
 from core.models.attachment import Attachment
@@ -87,12 +91,16 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
         new_users = serializer.save()
 
         ws_response = {
-            "new_chat_users": [dict(new_message) for new_message in AddUserToChatOutputSerializer(new_users, many=True).data]
+            "new_chat_users": [
+                dict(new_message) for new_message in AddUserToChatOutputSerializer(new_users, many=True).data
+            ]
         }
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
             data=ws_response,
-            action=ActionEnum.CREATE, postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(AddUserToChatOutputSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
@@ -114,8 +122,10 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
         user_chat_to_delete.delete()
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(self.get_serializer(user_chat_to_delete).data), action=ActionEnum.DELETE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=dict(self.get_serializer(user_chat_to_delete).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

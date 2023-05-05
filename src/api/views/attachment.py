@@ -8,7 +8,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.serializers.attachment import AttachmentSerializer
-from api.views.mixins import ChatWebSocketDistributorMixin, UserChatsWebSocketDistributorMixin
+from api.views.mixins import (
+    ChatWebSocketDistributorMixin,
+    UserChatsWebSocketDistributorMixin,
+)
 from core import constants
 from core.models.attachment import Attachment
 from core.utils.enums import ActionEnum, WSType
@@ -48,13 +51,17 @@ class AttachmentViewSet(GenericViewSet):
         serializer.save()
 
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=ActionEnum.CREATE,
-            postfix=[str(serializer.data["chat"])], ws_type=WSType.CHAT_MESSAGE,
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(serializer.data["chat"])],
+            ws_type=WSType.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=ActionEnum.CREATE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -70,13 +77,17 @@ class AttachmentViewSet(GenericViewSet):
         instance.delete()
 
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
-            postfix=[str(instance.chat.pk)], ws_type=WSType.CHAT_MESSAGE,
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(instance.chat.pk)],
+            ws_type=WSType.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

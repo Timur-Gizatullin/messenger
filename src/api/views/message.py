@@ -11,7 +11,10 @@ from api.serializers.message import (
     MessageForwardSerializer,
     MessageSerializer,
 )
-from api.views.mixins import ChatWebSocketDistributorMixin, UserChatsWebSocketDistributorMixin
+from api.views.mixins import (
+    ChatWebSocketDistributorMixin,
+    UserChatsWebSocketDistributorMixin,
+)
 from core.models import Message
 from core.utils.enums import ActionEnum, WSType
 
@@ -45,13 +48,17 @@ class MessageViewSet(GenericViewSet):
         message = serializer.save()
 
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=ActionEnum.CREATE,
-            postfix=[str(message.chat.pk)], ws_type=WSType.CHAT_MESSAGE,
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(message.chat.pk)],
+            ws_type=WSType.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data), action=ActionEnum.CREATE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(
@@ -70,13 +77,17 @@ class MessageViewSet(GenericViewSet):
         }
 
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=ws_response, action=ActionEnum.CREATE,
-            postfix=[str(request.data["forward_to_chat_id"])], ws_type=WSType.CHAT_MESSAGE,
+            data=ws_response,
+            action=ActionEnum.CREATE,
+            postfix=[str(request.data["forward_to_chat_id"])],
+            ws_type=WSType.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=ws_response, action=ActionEnum.CREATE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=ws_response,
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)
@@ -89,13 +100,17 @@ class MessageViewSet(GenericViewSet):
         instance.delete()
 
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
-            postfix=[str(instance.chat.pk)], ws_type=WSType.CHAT_MESSAGE,
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(instance.chat.pk)],
+            ws_type=WSType.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(self.get_serializer(instance).data), action=ActionEnum.DELETE,
-            postfix=[str(request.user.pk)], ws_type=WSType.CHAT_CHATS,
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)],
+            ws_type=WSType.CHAT_CHATS,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
