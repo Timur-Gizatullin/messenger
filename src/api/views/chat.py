@@ -27,7 +27,7 @@ from core import constants
 from core.models import Chat, Message, User
 from core.models.attachment import Attachment
 from core.models.user_chat import UserChat
-from core.utils.enums import ActionEnum, WSType
+from core.utils.enums import ActionEnum, WSMessageTypeEnum
 
 
 class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin, ListModelMixin, GenericViewSet):
@@ -100,7 +100,7 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
             data=ws_response,
             action=ActionEnum.CREATE,
             postfix=[str(request.user.pk)],
-            ws_type=WSType.CHAT_CHATS,
+            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         return Response(AddUserToChatOutputSerializer(new_users, many=True).data, status=status.HTTP_200_OK)
@@ -125,7 +125,7 @@ class ChatViewSet(ChatWebSocketDistributorMixin, PaginateMixin, CreateModelMixin
             data=dict(self.get_serializer(user_chat_to_delete).data),
             action=ActionEnum.DELETE,
             postfix=[str(request.user.pk)],
-            ws_type=WSType.CHAT_CHATS,
+            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

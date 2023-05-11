@@ -29,6 +29,5 @@ class ChatRoleEnum(BaseEnum):
     MEMBER = "MEMBER"
 
 
-class WSType(BaseEnum):
+class WSMessageTypeEnum(BaseEnum):
     CHAT_MESSAGE = "chat.message"
-    CHAT_CHATS = "chat.chats"

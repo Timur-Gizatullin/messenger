@@ -2,7 +2,7 @@ from django.urls import path
 from rest_framework import routers
 
 from api.consumers.chat import ChatConsumer
-from api.consumers.chats import UserChatsConsumer
+from api.consumers.user_chats import UserChatsConsumer
 from api.openapi import schema_view
 from api.views import ChatViewSet
 from api.views.attachment import AttachmentViewSet
