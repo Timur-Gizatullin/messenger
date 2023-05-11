@@ -9,12 +9,13 @@ from rest_framework.permissions import AllowAny
 from core import docs_constants
 
 
-def read_uml(path: str, reference: list[str], server: PlantUML) -> None:
-    for file in os.listdir(abspath(path)):
-        filename = os.fsdecode(file)
-        if filename.endswith(".puml"):
-            with open(f"{path}/{filename}") as uml_file:
-                reference.append(f"<a href='{server.get_url(uml_file.read())}'>{filename}</a>")
+def read_uml_diagrams(path: str, reference: list[str], server: PlantUML) -> None:
+    for folder in os.listdir(abspath(path)):
+        for file in os.listdir(abspath(f"{path}/{folder}")):
+            filename = os.fsdecode(file)
+            if filename.endswith(".puml"):
+                with open(f"{path}/{folder}/{filename}") as uml_file:
+                    reference.append(f"<a href='{server.get_url(uml_file.read())}'>{filename}</a>")
 
 
 def get_description() -> str:
@@ -28,8 +29,7 @@ def get_description() -> str:
         request_opts={},
     )
 
-    read_uml(path=docs_constants.DATA_PIPEPLINE_URL, reference=result, server=server)
-    read_uml(path=docs_constants.ER_DIAGRAM_URL, reference=result, server=server)
+    read_uml_diagrams(path=docs_constants.DOCS_URL, reference=result, server=server)
 
     return "\n".join(result)
 
