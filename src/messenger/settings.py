@@ -8,7 +8,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY", "secret")
 
 DEBUG = True
 
-ALLOWED_HOSTS: List[str] = ["127.0.0.1"]
+ALLOWED_HOSTS: List[str] = ["127.0.0.1",  "0.0.0.0"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -73,7 +73,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)],
+            "hosts": [("0.0.0.1", 6379)],
         },
     },
 }
@@ -114,6 +114,8 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+
+STATIC_ROOT = f"{BASE_DIR}/static"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"

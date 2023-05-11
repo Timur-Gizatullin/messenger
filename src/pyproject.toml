@@ -7,6 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.10"
+daphne = "3.0.2"
 django = "^4.1.7"
 psycopg2-binary = "^2.9.5"
 pillow = "^9.4.0"
@@ -16,7 +17,6 @@ loguru = "^0.6.0"
 drf-yasg = "^1.21.5"
 channels-redis = "3.4.1"
 django-stdimage = "^6.0.1"
-daphne = "3.0.2"
 
 
 [tool.poetry.group.dev.dependencies]
