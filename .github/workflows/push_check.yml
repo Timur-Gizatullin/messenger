@@ -2,6 +2,18 @@ name: push check
 
 on: push
 
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_NAME: github-actions
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+
+  SECRET_KEY: test
+
+  UML_CONSTRUCTOR_URL: http://www.plantuml.com/plantuml/png/
+
+
 jobs:
   lint:
     runs-on: ubuntu-latest
