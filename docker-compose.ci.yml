@@ -1,0 +1,29 @@
+version: '3.3'
+
+services:
+    api:
+        build: ./src
+        restart: on-failure
+        command: daphne --bind 0.0.0.0 -p 8000 messenger.asgi:application
+        depends_on:
+            - db
+            - redis
+        ports:
+            - "8000:8000"
+
+    db:
+        image: postgres:15.2
+        restart: on-failure
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_USER=postgres_user
+            - POSTGRES_PASSWORD=password
+            - POSTGRES_DB=messenger_ci
+
+    redis:
+        image: redis:7.0.9
+        restart: on-failure
+
+volumes:
+    postgres_data:

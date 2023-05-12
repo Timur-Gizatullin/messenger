@@ -1,0 +1,24 @@
+name: PR check
+
+on: push
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build containers
+        run: docker compose -f docker-compose.ci.yml -p some_prefix build --build-arg DEV_DEPS=True
+      - name: Up containers
+        run: docker compose -f docker-compose.ci.yml -p some_prefix up -d --remove-orphans
+      - name: Lint
+        run: |
+          docker exec -i some_prefix-api-1 black --check .
+          docker exec -i some_prefix-api-1 flake8 --config=src/setup.cfg
+          docker exec -i some_prefix-api-1 mypy .
+      - name: run tests
+        run: |
+          cd ./src
+          pytest
+      - name: Down containers
+        run: docker compose -f docker-compose.ci.yml -p some_prefix down -v
