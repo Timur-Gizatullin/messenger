@@ -27,7 +27,3 @@ class ChatRoleEnum(BaseEnum):
     OWNER = "OWNER"
     ADMIN = "ADMIN"
     MEMBER = "MEMBER"
-
-
-class WSMessageTypeEnum(BaseEnum):
-    CHAT_MESSAGE = "chat.message"

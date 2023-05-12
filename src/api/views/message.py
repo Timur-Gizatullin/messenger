@@ -16,7 +16,7 @@ from api.views.mixins import (
     UserChatsWebSocketDistributorMixin,
 )
 from core.models import Message
-from core.utils.enums import ActionEnum, WSMessageTypeEnum
+from core.utils.enums import ActionEnum
 
 
 class MessageViewSet(GenericViewSet):
@@ -51,14 +51,12 @@ class MessageViewSet(GenericViewSet):
             data=dict(serializer.data),
             action=ActionEnum.CREATE,
             postfix=[str(message.chat.pk)],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
             data=dict(serializer.data),
             action=ActionEnum.CREATE,
             postfix=[str(request.user.pk)],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         return Response(
@@ -80,14 +78,12 @@ class MessageViewSet(GenericViewSet):
             data=ws_response,
             action=ActionEnum.CREATE,
             postfix=[str(request.data["forward_to_chat_id"])],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
             data=ws_response,
             action=ActionEnum.CREATE,
             postfix=[str(request.user.pk)],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         return Response(MessageSerializer(new_messages, many=True).data, status=status.HTTP_201_CREATED)
@@ -103,14 +99,12 @@ class MessageViewSet(GenericViewSet):
             data=dict(self.get_serializer(instance).data),
             action=ActionEnum.DELETE,
             postfix=[str(instance.chat.pk)],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
             data=dict(self.get_serializer(instance).data),
             action=ActionEnum.DELETE,
             postfix=[str(request.user.pk)],
-            ws_type=WSMessageTypeEnum.CHAT_MESSAGE,
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)

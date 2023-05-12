@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from core.utils.enums import ActionEnum, WSMessageTypeEnum
+from core.utils.enums import ActionEnum
 
 
 @dataclass
@@ -11,5 +11,5 @@ class WSContent:
 
 @dataclass
 class WSMessage:
-    type: WSMessageTypeEnum
+    type: str
     content: WSContent
