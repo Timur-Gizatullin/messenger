@@ -5,6 +5,11 @@ services:
         build: ./src
         restart: on-failure
         command: daphne --bind 0.0.0.0 -p 8000 messenger.asgi:application
+        environment:
+            - SECRET_KEY=secret
+            - POSTGRES_NAME=messenger_ci
+            - POSTGRES_USER=postgres_user
+            - POSTGRES_PASSWORD=password
         depends_on:
             - db
             - redis
