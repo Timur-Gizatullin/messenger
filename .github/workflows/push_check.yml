@@ -13,10 +13,10 @@ jobs:
         run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
       - name: Lint
         run: |
-          docker exec -i messenger-api-1 black --check .
-          docker exec -i messenger-api-1 isort -- check . 
           docker exec -i messenger-api-1 flake8 --config=setup.cfg .
           docker exec -i messenger-api-1 mypy .
+          docker exec -i messenger-api-1 black --check .
+          docker exec -i messenger-api-1 isort -- check .
       - name: run tests
         run: docker exec -i some_prefix-api-1 pytest
       - name: Down containers
