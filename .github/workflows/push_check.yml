@@ -14,7 +14,6 @@ jobs:
       - name: Lint
         run: |
           docker exec -i messenger-api-1 black --check .
-          docker exec -i messenger-api-1 isort -- check . 
           docker exec -i messenger-api-1 flake8 --config=setup.cfg
           docker exec -i messenger-api-1 mypy .
       - name: run tests
