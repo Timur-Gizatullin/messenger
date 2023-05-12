@@ -16,6 +16,6 @@ jobs:
           docker exec -i messenger-api-1 black --check .
           docker exec -i messenger-api-1 isort -- check-only .
       - name: run tests
-        run: docker exec -i some_prefix-api-1 pytest
+        run: docker exec -i messenger-api-1 pytest
       - name: Down containers
         run: docker compose -f docker-compose.ci.yml -p messenger down -v
