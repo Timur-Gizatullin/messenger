@@ -47,3 +47,58 @@ class AttachmentSerializer(serializers.ModelSerializer):
         attrs["author"] = self.context["request"].user
 
         return attrs
+
+
+class AttachmentForwardSerializer(serializers.ModelSerializer):
+    forward_to_chat_id = serializers.PrimaryKeyRelatedField(queryset=Chat.objects.all(), write_only=True)
+    attachment_ids = serializers.ListSerializer(
+        child=serializers.PrimaryKeyRelatedField(queryset=Attachment.objects.all()), required=True
+    )
+
+    class Meta:
+        model = Attachment
+        fields = "__all__"
+        extra_kwargs = {
+            "text": {"read_only": True},
+            "author": {"read_only": True},
+            "chat": {"read_only": True},
+            "reply_to_message": {"read_only": True},
+            "reply_to_attachment": {"read_only": True},
+            "forwarded_by": {"read_only": True},
+            "file": {"read_only": True},
+        }
+
+    def validate(self, attrs):
+        user = self.context["request"].user
+
+        if len(attrs["attachment_ids"]) == 0:
+            raise serializers.ValidationError("attachment_ids field is required")
+        if not Attachment.objects.filter(pk__in=[message.pk for message in attrs["attachment_ids"]]).filter(
+            chat__pk=attrs["attachment_ids"][0].chat.pk
+        ):
+            raise serializers.ValidationError("Impossible to forward attachments from different chats in one run")
+
+        current_chat_id = Chat.objects.get(attachments=attrs["attachment_ids"][0]).pk
+        Chat.objects.validate_before_create_message(user_id=user.pk, chat_id=current_chat_id)
+        Chat.objects.validate_before_create_message(user_id=user.pk, chat_id=attrs["forward_to_chat_id"].pk)
+
+        attrs["forwarded_by"] = user
+
+        return attrs
+
+    def create(self, validated_data):
+        new_attachments = []
+        for attachment in validated_data["attachment_ids"]:
+            new_attachments.append(
+                Attachment(
+                    forwarded_by=validated_data["forwarded_by"],
+                    chat=validated_data["forward_to_chat_id"],
+                    author=attachment.author,
+                    reply_to_message=attachment.reply_to_message,
+                    reply_to_attachment=attachment.reply_to_attachment,
+                    file=attachment.file,
+                    type=attachment.type,
+                )
+            )
+
+        return Attachment.objects.bulk_create(new_attachments)

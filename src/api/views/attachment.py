@@ -2,23 +2,29 @@ from django.db.models import Q, QuerySet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import CreateModelMixin
 from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachment import AttachmentSerializer
+from api.serializers.attachment import AttachmentSerializer, AttachmentForwardSerializer
+from api.views.mixins import (
+    ChatWebSocketDistributorMixin,
+    UserChatsWebSocketDistributorMixin,
+)
 from core import constants
 from core.models.attachment import Attachment
+from core.utils.enums import ActionEnum
 
 
-class AttachmentViewSet(CreateModelMixin, GenericViewSet):
+class AttachmentViewSet(GenericViewSet):
     permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
-        if self.action == "create":
+        if self.action in ("create", "delete_attachment"):
             return AttachmentSerializer
+        if self.action == "forward":
+            return AttachmentForwardSerializer
 
     def get_queryset(self):
         return Attachment.objects.all()
@@ -41,6 +47,25 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
 
         return super().filter_queryset(queryset)
 
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(serializer.data["chat"])],
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+        )
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
     @action(detail=True, methods=["DELETE"])
     def delete_attachment(self, request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
@@ -49,7 +74,43 @@ class AttachmentViewSet(CreateModelMixin, GenericViewSet):
             return Response(data=constants.YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR, status=status.HTTP_403_FORBIDDEN)
 
         instance = get_object_or_404(queryset, pk=kwargs["pk"])
-
         instance.delete()
 
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(instance.chat.pk)],
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(self.get_serializer(instance).data),
+            action=ActionEnum.DELETE,
+            postfix=[str(request.user.pk)],
+        )
+
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["POST"], url_path="forward")
+    def forward(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        new_attachments = serializer.save()
+
+        ws_response = {
+            "attachments": [dict(attachment) for attachment in AttachmentSerializer(new_attachments, many=True).data]
+        }
+
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=ws_response,
+            action=ActionEnum.CREATE,
+            postfix=[str(request.data["forward_to_chat_id"])],
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=ws_response,
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+        )
+
+        return Response(AttachmentSerializer(new_attachments, many=True).data, status=status.HTTP_201_CREATED)
