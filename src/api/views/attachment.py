@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachment import AttachmentSerializer
+from api.serializers.attachment import AttachmentSerializer, AttachmentForwardSerializer
 from api.views.mixins import (
     ChatWebSocketDistributorMixin,
     UserChatsWebSocketDistributorMixin,
@@ -23,6 +23,8 @@ class AttachmentViewSet(GenericViewSet):
     def get_serializer_class(self):
         if self.action in ("create", "delete_attachment"):
             return AttachmentSerializer
+        if self.action == "forward":
+            return AttachmentForwardSerializer
 
     def get_queryset(self):
         return Attachment.objects.all()
@@ -87,3 +89,24 @@ class AttachmentViewSet(GenericViewSet):
         )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["POST"], url_path="forward")
+    def forward(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        serializer.is_valid(raise_exception=True)
+        new_attachments = serializer.save()
+
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(serializer.data["chat"])],
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+        )
+
+        return Response(AttachmentSerializer(new_attachments, many=True).data, status=status.HTTP_201_CREATED)
