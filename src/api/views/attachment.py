@@ -97,14 +97,18 @@ class AttachmentViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         new_attachments = serializer.save()
 
+        ws_response = {
+            "attachments": [dict(attachment) for attachment in AttachmentSerializer(new_attachments, many=True).data]
+        }
+
         ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data),
+            data=ws_response,
             action=ActionEnum.CREATE,
-            postfix=[str(serializer.data["chat"])],
+            postfix=[str(request.data["forward_to_chat_id"])],
         )
 
         UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
-            data=dict(serializer.data),
+            data=ws_response,
             action=ActionEnum.CREATE,
             postfix=[str(request.user.pk)],
         )

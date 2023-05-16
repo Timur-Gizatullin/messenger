@@ -19,7 +19,7 @@ def test__forward_attachments__success_case(api_client):
         reverse("attachment-forward"),
         data={
             "forward_to_chat_id": chat_to_forward.pk,
-            "attachment_ids": [attachments[0].pk, attachments[1].pk, attachments[2].pk],
+            "attachment_ids": [attachments[0].pk, attachments[1].pk, attachments[2].pk]
         },
         format="json",
     )
