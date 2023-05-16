@@ -117,3 +117,5 @@ USE_TZ = True
 STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+UML_CONSTRUCTOR_URL = os.environ.get("UML_CONSTRUCTOR_URL", "http://www.plantuml.com/plantuml/png/")

@@ -5,11 +5,13 @@ from drf_yasg.views import get_schema_view
 from plantuml import PlantUML
 from rest_framework.permissions import AllowAny
 
-from core import docs_constants
-from messenger.settings import BASE_DIR
+from messenger.settings import BASE_DIR, UML_CONSTRUCTOR_URL
 
 
-def read_uml_diagrams(path: str, reference: list[str], server: PlantUML) -> None:
+def read_uml_diagrams(reference: list[str]) -> None:
+    server = PlantUML(url=UML_CONSTRUCTOR_URL)
+    path = "../docs"
+
     for folder in os.listdir(os.path.join(BASE_DIR, path)):
         for file in os.listdir(os.path.join(BASE_DIR, path, folder)):
             if file.endswith(".puml"):
@@ -20,9 +22,7 @@ def read_uml_diagrams(path: str, reference: list[str], server: PlantUML) -> None
 def get_description() -> str:
     result = ["UML diagrams:"]
 
-    server = PlantUML(url=os.environ.get("UML_CONSTRUCTOR_URL", "http://www.plantuml.com/plantuml/png/"))
-
-    read_uml_diagrams(path=docs_constants.DOCS_URL, reference=result, server=server)
+    read_uml_diagrams(reference=result)
 
     return "\n".join(result)
 
