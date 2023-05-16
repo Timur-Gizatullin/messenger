@@ -10,7 +10,7 @@ RUN apt update \
   && pip install --upgrade pip \
   && pip install poetry==1.2.2
 
-COPY ./pyproject.toml ./poetry.lock ./
+COPY ./src/pyproject.toml ./src/poetry.lock ./
 
 ARG DEV_DEPS=False
 
@@ -21,5 +21,5 @@ RUN if [ $DEV_DEPS = True ] ; then \
 
 COPY . .
 
-RUN chmod 777 /usr/src/app/entrypoint.sh
-ENTRYPOINT ["/usr/src/app/entrypoint.sh"]
+RUN chmod 777 /usr/src/app/src/entrypoint.sh
+ENTRYPOINT ["/usr/src/app/src/entrypoint.sh"]
