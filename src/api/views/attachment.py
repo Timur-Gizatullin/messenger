@@ -97,4 +97,16 @@ class AttachmentViewSet(GenericViewSet):
         serializer.is_valid(raise_exception=True)
         new_attachments = serializer.save()
 
+        ChatWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(serializer.data["chat"])],
+        )
+
+        UserChatsWebSocketDistributorMixin.distribute_to_ws_consumers(
+            data=dict(serializer.data),
+            action=ActionEnum.CREATE,
+            postfix=[str(request.user.pk)],
+        )
+
         return Response(AttachmentSerializer(new_attachments, many=True).data, status=status.HTTP_201_CREATED)
