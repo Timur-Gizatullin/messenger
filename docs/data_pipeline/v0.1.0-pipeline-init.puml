@@ -156,7 +156,7 @@ Backend --> Frontend: HTTP: 204
 
 
 == Forward message ==
-Frontend -> Backend: HTTP POST: /api/messages/forward/ (message_ids + attachment_ids + forward_to_id + auth_token)
+Frontend -> Backend: HTTP POST: /api/messages/forward/ (message_ids + forward_to_id + auth_token)
 Backend -> Postgres: PSQL: Get user by auth_token
 
 alt token not found
@@ -165,11 +165,6 @@ Backend --x Frontend: HTTP: 401
 end alt
 
 Postgres --> Backend: PSQL: user
-
-Backend -> Backend: check attachment_ids and message_ids is not None
-alt attachment_ids and message_ids is None
-Backend --> Frontend: HTTP: 400
-end alt
 
 Backend -> Postgres: PSQL: get chat by forward_to_id
 
@@ -180,7 +175,6 @@ end alt
 
 Postgres --> Backend: PSQL: chat
 
-alt message_ids is not None
 Backend -> Postgres: PSQL: Get messages_to_forward by message_ids
 Postgres --> Backend: PSQL: messages_to_forward
 
@@ -188,9 +182,32 @@ loop for message in messages_to_forward
 Backend -> Backend: message.forward_by = user.id
 Backend -> Backend: message.chat = chat
 end loop
+
+Backend -> Postgres: PSQL: add new_messages
+Postgres --> Backend: PSQL: new_messages
+Backend -> Frontend: WS: CREATE: new_messages
+Backend --> Frontend: HTTP: new_messages
+
+== Forward attachments ==
+Frontend -> Backend: HTTP POST: /api/attachments/forward/ (attachment_ids + forward_to_id + auth_token)
+Backend -> Postgres: PSQL: Get user by auth_token
+
+alt token not found
+Postgres --x Backend: PSQL: Not Found
+Backend --x Frontend: HTTP: 401
 end alt
 
-alt attachment_ids is not None
+Postgres --> Backend: PSQL: user
+
+Backend -> Postgres: PSQL: get chat by forward_to_id
+
+alt chat not found
+Postgres --> Backend: PSQL: None
+Backend --> Frontend: HTTP: 404
+end alt
+
+Postgres --> Backend: PSQL: chat
+
 Backend -> Postgres: PSQL: Get attachments_to_forward by attachment_ids
 Postgres --> Backend: PSQL: attachments_to_forward
 
@@ -198,14 +215,11 @@ loop for attachment in attachments_to_forward
 Backend -> Backend: attachment.forward_by = user.id
 Backend -> Backend: attachment.chat = chat
 end loop
-end alt
 
-Backend -> Postgres: PSQL: add new_messages
-Postgres --> Backend: PSQL: new_messages
 Backend -> Postgres: PSQL: add new_attachments
 Postgres --> Backend: PSQL: new_attachments
-Backend -> Frontend: WS: CREATE: new_messages + new_attachments
-Backend --> Frontend: HTTP: new_messages + new_attachments
+Backend -> Frontend: WS: CREATE: new_attachments
+Backend --> Frontend: HTTP: new_attachments
 
 == Registration ==
 Frontend -> Backend: HTTP POST: /api/auth/sign_up/ (email+password)

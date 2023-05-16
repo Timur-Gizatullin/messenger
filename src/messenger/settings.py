@@ -119,3 +119,5 @@ STATIC_URL = "/static/"
 STATIC_ROOT = f"{BASE_DIR}/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+UML_CONSTRUCTOR_URL = os.environ.get("UML_CONSTRUCTOR_URL", "http://www.plantuml.com/plantuml/png/")

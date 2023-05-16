@@ -17,6 +17,7 @@ loguru = "^0.6.0"
 drf-yasg = "^1.21.5"
 channels-redis = "3.4.1"
 django-stdimage = "^6.0.1"
+plantuml = "^0.3.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -27,6 +28,7 @@ flake8 = "^6.0.0"
 pytest = "^7.2.2"
 pytest-django = "^4.5.2"
 factory-boy = "^3.2.1"
+pytest-cov = "^4.0.0"
 
 [build-system]
 requires = ["poetry-core"]
