@@ -10,4 +10,6 @@ YOU_CANNOT_DELETE_CHAT_OWNER = "You cannot delete chat owner"
 YOR_ARE_NOT_A_MEMBER_OF_THE_CHAT_OR_AUTHOR = "You are not a member of the chat or author"
 ONLY_ADMIN_OR_OWNER_CAN_ADD_USERS_TO_CHAT = "Only admin or owner can add users to chat"
 
+WS_MESSAGE_TYPE = "chat.message"
+
 WS_UNAUTHORIZED_CODE = 3000
