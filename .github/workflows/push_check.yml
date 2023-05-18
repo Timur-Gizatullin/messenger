@@ -42,6 +42,6 @@ jobs:
       - name: Up containers
         run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
       - name: run tests
-        run: docker exec -i messenger-api-1 pytest
+        run: docker exec -i messenger-api-1 pytest ./src
       - name: Down containers
         run: docker compose -f docker-compose.ci.yml -p messenger down -v
