@@ -29,12 +29,11 @@ jobs:
           docker exec -i messenger-api-1 isort --check-only ./src 
           docker exec -i messenger-api-1 flake8 --config=./src/setup.cfg 
           docker exec -i messenger-api-1 mypy ./src
-      - name: run tests
-        run: docker exec -i messenger-api-1 pytest
       - name: Down containers
         run: docker compose -f docker-compose.ci.yml -p messenger down -v
 
   tests:
+    needs: [lint]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -42,3 +41,7 @@ jobs:
         run: docker compose -f docker-compose.ci.yml -p messenger build --build-arg DEV_DEPS=True
       - name: Up containers
         run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
+      - name: run tests
+        run: docker exec -i messenger-api-1 pytest
+      - name: Down containers
+        run: docker compose -f docker-compose.ci.yml -p messenger down -v
