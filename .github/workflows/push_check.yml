@@ -33,3 +33,12 @@ jobs:
         run: docker exec -i messenger-api-1 pytest
       - name: Down containers
         run: docker compose -f docker-compose.ci.yml -p messenger down -v
+
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build containers
+        run: docker compose -f docker-compose.ci.yml -p messenger build --build-arg DEV_DEPS=True
+      - name: Up containers
+        run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
