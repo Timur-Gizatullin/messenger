@@ -13,6 +13,7 @@ services:
             - POSTGRES_USER=postgres_user
             - POSTGRES_PASSWORD=postgres
             - POSTGRES_HOST=db
+            - REDIS_HOST=redis
             - DEBUG=True
         depends_on:
             - db
