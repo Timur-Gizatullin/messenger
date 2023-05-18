@@ -1,0 +1,47 @@
+name: push check
+
+on: push
+
+env:
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres
+  POSTGRES_NAME: github-actions
+  POSTGRES_HOST: localhost
+  POSTGRES_PORT: 5432
+
+  SECRET_KEY: test
+
+  UML_CONSTRUCTOR_URL: http://www.plantuml.com/plantuml/png/
+
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build containers
+        run: docker compose -f docker-compose.ci.yml -p messenger build --build-arg DEV_DEPS=True
+      - name: Up containers
+        run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
+      - name: Lint
+        run: |
+          docker exec -i messenger-api-1 black --check ./src
+          docker exec -i messenger-api-1 isort --check-only ./src 
+          docker exec -i messenger-api-1 flake8 --config=./src/setup.cfg 
+          docker exec -i messenger-api-1 mypy ./src
+      - name: Down containers
+        run: docker compose -f docker-compose.ci.yml -p messenger down -v
+
+  tests:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build containers
+        run: docker compose -f docker-compose.ci.yml -p messenger build --build-arg DEV_DEPS=True
+      - name: Up containers
+        run: docker compose -f docker-compose.ci.yml -p messenger up -d --remove-orphans
+      - name: run tests
+        run: docker exec -i messenger-api-1 pytest ./src
+      - name: Down containers
+        run: docker compose -f docker-compose.ci.yml -p messenger down -v

@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.serializers.attachment import AttachmentSerializer, AttachmentForwardSerializer
+from api.serializers.attachment import AttachmentForwardSerializer, AttachmentSerializer
 from api.views.mixins import (
     ChatWebSocketDistributorMixin,
     UserChatsWebSocketDistributorMixin,
