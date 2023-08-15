@@ -6,9 +6,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.environ.get("SECRET_KEY", "secret")
 
-DEBUG = True
+DEBUG = os.environ.get("DEBUG")
 
-ALLOWED_HOSTS: List[str] = ["127.0.0.1"]
+ALLOWED_HOSTS: List[str] = ["127.0.0.1",  "0.0.0.0"]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -49,6 +49,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.media",
             ],
         },
     },
@@ -61,10 +62,10 @@ ASGI_APPLICATION = "messenger.asgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": os.environ.get("POSTGRES_NAME", "messenger"),
+        "NAME": os.environ.get("POSTGRES_DB", "messenger"),
         "USER": os.environ.get("POSTGRES_USER", "postgres"),
         "PASSWORD": os.environ.get("POSTGRES_PASSWORD", "04tim2001"),
-        "HOST": os.environ.get("POSTGRES_HOST", "localhost"),
+        "HOST": os.environ.get("POSTGRES_HOST", "127.0.0.1"),
         "PORT": os.environ.get("POSTGRES_PORT", "5432"),
     }
 }
@@ -114,7 +115,13 @@ USE_I18N = True
 
 USE_TZ = True
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+
+STATIC_ROOT = f"{BASE_DIR}/static/"
+
+MEDIA_URL = "/media/"
+
+MEDIA_ROOT = f"{BASE_DIR}/media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 

@@ -1,0 +1,50 @@
+version: '3.3'
+
+services:
+    api:
+        build:
+            context: .
+            dockerfile: src/Dockerfile
+        restart: on-failure
+        command: daphne --bind 0.0.0.0 -p 8000 messenger.asgi:application
+        environment:
+            - SECRET_KEY=${SECRET_KEY}
+            - POSTGRES_DB=${POSTGRES_DB}
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_HOST=${POSTGRES_HOST}
+            - POSTGRES_PORT=${POSTGRES_PORT}
+            - UML_CONSTRUCTOR_URL=${UML_CONSTRUCTOR_URL}
+            - DEBUG=${DEBUG}
+        depends_on:
+            - db
+            - redis
+        ports:
+            - "8000:8000"
+
+    db:
+        image: postgres:15.2
+        restart: on-failure
+        volumes:
+            - postgres_data:/var/lib/postgresql/data/
+        environment:
+            - POSTGRES_USER=${POSTGRES_USER}
+            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            - POSTGRES_DB=${POSTGRES_DB}
+        healthcheck:
+            test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+            interval: 30s
+            timeout: 3s
+            retries: 3
+
+    redis:
+        image: redis:7.0.9
+        restart: on-failure
+        healthcheck:
+            test: redis-cli ping
+            interval: 30s
+            timeout: 10s
+            retries: 3
+
+volumes:
+    postgres_data:
